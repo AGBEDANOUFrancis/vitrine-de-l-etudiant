@@ -2,6 +2,12 @@ import { enregistrerDemande, chargerContenu } from "./firebase-config.js";
 
 const fmt = (n) => n.toLocaleString("fr-FR").replace(/\u00A0/g, ".");
 
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;",
+  }[c]));
+}
+
 let FILIERES = [];
 let DESTINATIONS = [];
 let SERVICES_ACCOMPAGNEMENT = [];
@@ -13,13 +19,13 @@ function renderFlyers() {
   const grid = document.getElementById("flyersGrid");
   grid.innerHTML = FILIERES.map(
     (f) => `
-    <button class="flyer flyer--${f.accent}" data-id="${f.id}" aria-haspopup="dialog">
+    <button class="flyer flyer--${f.accent}" data-id="${escapeHtml(f.id)}" aria-haspopup="dialog">
       <span class="flyer__top">
-        <span class="flyer__numero">${f.numero}</span>
-        <span class="flyer__partie">${f.partie}</span>
+        <span class="flyer__numero">${escapeHtml(f.numero)}</span>
+        <span class="flyer__partie">${escapeHtml(f.partie)}</span>
       </span>
-      <span class="flyer__titre">${f.titre}</span>
-      <span class="flyer__resume">${f.resume}</span>
+      <span class="flyer__titre">${escapeHtml(f.titre)}</span>
+      <span class="flyer__resume">${escapeHtml(f.resume)}</span>
       <span class="flyer__meta">
         <span>${f.formations.length} formation${f.formations.length > 1 ? "s" : ""}</span>
         <span class="flyer__voir">Voir le flyer →</span>
@@ -38,12 +44,12 @@ function renderFlyers() {
 function renderDestinations() {
   const grid = document.getElementById("destinationsGrid");
   grid.innerHTML = DESTINATIONS.map(
-    (pays) => `<span class="destination">${pays}</span>`
+    (pays) => `<span class="destination">${escapeHtml(pays)}</span>`
   ).join("");
 }
 
 /* ---------------------------------------------------------
-   3. RENDU SERVICES D'ACCOMPAGNEMENT
+   3. RENDU SERVICES D'ACCOMPAGNEMENT (cliquables)
 --------------------------------------------------------- */
 function renderServices() {
   const grid = document.getElementById("servicesGrid");
@@ -51,8 +57,8 @@ function renderServices() {
     (s, i) => `
     <button class="service-card" data-index="${i}" aria-haspopup="dialog">
       <span class="service-card__num">0${i + 1}</span>
-      <h3>${s.titre}</h3>
-      <p>${s.texte}</p>
+      <h3>${escapeHtml(s.titre)}</h3>
+      <p>${escapeHtml(s.texte)}</p>
       <span class="service-card__voir">Voir la procédure →</span>
     </button>`
   ).join("");
@@ -62,54 +68,13 @@ function renderServices() {
   });
 }
 
-const serviceModal = document.getElementById("serviceModal");
-
-function openServiceModal(index) {
-  const s = SERVICES_ACCOMPAGNEMENT[index];
-  if (!s) return;
-
-  document.getElementById("serviceModalTitle").textContent = s.titre;
-  document.getElementById("serviceModalTexte").textContent = s.texte;
-
-  const etapes = (s.procedure || "")
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
-
-  document.getElementById("serviceModalProcedure").innerHTML = etapes.length
-    ? `<ol class="modal__steps">${etapes
-        .map((e) => `<li>${e.replace(/^\d+\.\s*/, "")}</li>`)
-        .join("")}</ol>`
-    : "<p>Procédure à venir.</p>";
-
-  const wa = document.getElementById("serviceModalWhatsapp");
-  wa.href = `https://wa.me/22871079494?text=${encodeURIComponent(
-    `Bonjour, j'aimerais être accompagné(e) pour : ${s.titre}.`
-  )}`;
-
-  serviceModal.classList.add("is-open");
-  serviceModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("no-scroll");
-}
-
-function closeServiceModal() {
-  serviceModal.classList.remove("is-open");
-  serviceModal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("no-scroll");
-}
-
-serviceModal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeServiceModal));
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeServiceModal();
-});
-
 /* ---------------------------------------------------------
    4. FOOTER — liste des filières
 --------------------------------------------------------- */
 function renderFooterFilieres() {
   const ul = document.getElementById("footerFilieres");
   ul.innerHTML = FILIERES.map(
-    (f) => `<li><a href="#filieres" data-id="${f.id}" class="footer-filiere-link">${f.titre}</a></li>`
+    (f) => `<li><a href="#filieres" data-id="${escapeHtml(f.id)}" class="footer-filiere-link">${escapeHtml(f.titre)}</a></li>`
   ).join("");
   ul.querySelectorAll(".footer-filiere-link").forEach((a) => {
     a.addEventListener("click", (e) => {
@@ -158,10 +123,10 @@ function openModal(id) {
       (form, i) => `
       <tr>
         <td>${i + 1}</td>
-        <td>${form.nom}</td>
+        <td>${escapeHtml(form.nom)}</td>
         <td>${fmt(form.inscription)} F</td>
-        <td>${form.note ? form.note : fmt(form.formation) + " F"}</td>
-        <td>${form.duree}</td>
+        <td>${form.note ? escapeHtml(form.note) : fmt(form.formation) + " F"}</td>
+        <td>${escapeHtml(form.duree)}</td>
       </tr>`
     )
     .join("");
@@ -183,8 +148,53 @@ function closeModal() {
 }
 
 modal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeModal));
+
+/* ---------------------------------------------------------
+   6bis. MODALE SERVICE (procédure)
+--------------------------------------------------------- */
+const serviceModal = document.getElementById("serviceModal");
+
+function openServiceModal(index) {
+  const s = SERVICES_ACCOMPAGNEMENT[index];
+  if (!s) return;
+
+  document.getElementById("serviceModalTitle").textContent = s.titre;
+  document.getElementById("serviceModalTexte").textContent = s.texte;
+
+  const etapes = (s.procedure || "")
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+
+  document.getElementById("serviceModalProcedure").innerHTML = etapes.length
+    ? `<ol class="modal__steps">${etapes
+        .map((e) => `<li>${escapeHtml(e.replace(/^\d+\.\s*/, ""))}</li>`)
+        .join("")}</ol>`
+    : "<p>Procédure à venir.</p>";
+
+  const wa = document.getElementById("serviceModalWhatsapp");
+  wa.href = `https://wa.me/22871079494?text=${encodeURIComponent(
+    `Bonjour, j'aimerais être accompagné(e) pour : ${s.titre}.`
+  )}`;
+
+  serviceModal.classList.add("is-open");
+  serviceModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("no-scroll");
+}
+
+function closeServiceModal() {
+  serviceModal.classList.remove("is-open");
+  serviceModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("no-scroll");
+}
+
+serviceModal.querySelectorAll("[data-close]").forEach((el) => el.addEventListener("click", closeServiceModal));
+
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeModal();
+  if (e.key === "Escape") {
+    closeModal();
+    closeServiceModal();
+  }
 });
 
 /* ---------------------------------------------------------
