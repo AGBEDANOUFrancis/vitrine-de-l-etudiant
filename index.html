@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vitrine de l'Étudiant — CFA · CAP · BT · Modulaires</title>
+<meta name="description" content="Vitrine de l'Étudiant : centre de formations professionnelles à Lomé — secrétariat, informatique, paramédical, artisanat, langues et accompagnement CNI/passeport/nationalité." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ================= BANDEAU AGRÉMENT ================= -->
+<div class="topbar">
+  <div class="topbar__inner">
+    <span class="topbar__agrement">Agrément Arrêté N°2024/037/MEPST/MET/CAB/SE-CCCS</span>
+    <div class="topbar__contacts">
+      <a href="tel:+22871079494">📞 71 07 94 94</a>
+      <a href="tel:+22899290586">99 29 05 86</a>
+    </div>
+  </div>
+</div>
+
+<!-- ================= NAVIGATION ================= -->
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="#top" class="nav__brand">
+      <span class="nav__logo">VE</span>
+      <span class="nav__brandtext">Vitrine <em>de l'Étudiant</em></span>
+    </a>
+    <nav class="nav__links" id="navLinks">
+      <a href="#filieres">Formations</a>
+      <a href="#international">International</a>
+      <a href="#services">Accompagnement</a>
+      <a href="#apropos">À propos</a>
+      <a href="#contact" class="nav__cta">Nous contacter</a>
+       <a href="inscription.html" class="nav__cta">S'inscrire</a>
+    </nav>
+    <button class="nav__burger" id="navBurger" aria-label="Ouvrir le menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="top">
+  <div class="hero__ribbon" aria-hidden="true">
+    <span class="ribbon-bleu"></span><span class="ribbon-blanc"></span><span class="ribbon-rouge"></span>
+  </div>
+  <div class="hero__inner">
+    <p class="hero__eyebrow">CFA — CAP — BT — Modulaires</p>
+    <h1 class="hero__title">Votre avenir professionnel<br> a une <span>vitrine</span>.</h1>
+    <p class="hero__lead">21 filières, 6 grandes familles de métiers, un accompagnement complet pour vos papiers
+      d'identité et vos contrats de travail à l'international. Trouvez la formation qui vous ressemble.</p>
+    <div class="hero__actions">
+      <a href="#filieres" class="btn btn--primary">Voir les formations</a>
+      <a href="https://wa.me/22871079494" target="_blank" rel="noopener" class="btn btn--ghost">Écrire sur WhatsApp</a>
+    </div>
+    <div class="hero__stats">
+      <div><strong>21</strong><span>formations</span></div>
+      <div><strong>6</strong><span>filières</span></div>
+      <div><strong>6</strong><span>pays partenaires</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FILIÈRES / FLYERS CLIQUABLES ================= -->
+<section class="section" id="filieres">
+  <div class="section__head">
+    <p class="eyebrow">Nos offres de formations</p>
+    <h2>Choisissez une filière pour découvrir son flyer</h2>
+    <p class="section__sub">Chaque carte est un flyer complet : cliquez dessus pour révéler la liste des
+      formations, les frais d'inscription, les frais de formation et la durée.</p>
+  </div>
+
+  <div class="flyers" id="flyersGrid"><!-- injecté par js/app.js --></div>
+</section>
+
+<!-- ================= INTERNATIONAL ================= -->
+<section class="section section--dark" id="international">
+  <div class="section__head section__head--light">
+    <p class="eyebrow">Contrats de travail disponibles</p>
+    <h2>Une passerelle vers l'international</h2>
+    <p class="section__sub section__sub--light">Nous orientons nos étudiants et diplômés vers des opportunités
+      de contrats de travail dans plusieurs pays partenaires.</p>
+  </div>
+  <div class="destinations" id="destinationsGrid"><!-- injecté par js/app.js --></div>
+</section>
+
+<!-- ================= SERVICES D'ACCOMPAGNEMENT ================= -->
+<section class="section" id="services">
+  <div class="section__head">
+    <p class="eyebrow">Au-delà de la formation</p>
+    <h2>On vous accompagne dans vos démarches administratives</h2>
+    <p class="section__sub">Nationalité, carte nationale d'identité, passeport : nous constituons vos dossiers
+      et assurons le suivi jusqu'à l'obtention.</p>
+  </div>
+  <div class="services" id="servicesGrid"><!-- injecté par js/app.js --></div>
+</section>
+
+<!-- ================= À PROPOS ================= -->
+<section class="section" id="apropos">
+  <div class="apropos">
+    <div class="apropos__media" aria-hidden="true">
+      <div class="apropos__badge">
+        <span class="apropos__badge-ring">Agréé</span>
+        <span class="apropos__badge-year">2024</span>
+      </div>
+    </div>
+    <div class="apropos__text">
+      <p class="eyebrow">Qui sommes-nous</p>
+      <h2>Vitrine de l'Étudiant, un tremplin vers un métier</h2>
+      <p>Association agréée (Arrêté N°2024/037/MEPST/MET/CAB/SE-CCCS), Vitrine de l'Étudiant forme les jeunes
+        de Lomé et d'ailleurs aux métiers de demain à travers des cursus CFA, CAP, BT et modulaires. Nous
+        combinons formation professionnelle courte, accompagnement administratif et mise en relation avec des
+        employeurs à l'international.</p>
+      <ul class="apropos__list">
+        <li>Formations modulaires de quelques semaines à deux ans</li>
+        <li>Accompagnement CNI, passeport et nationalité</li>
+        <li>Réseau de contrats de travail à l'étranger</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section class="section section--contact" id="contact">
+  <div class="contact">
+    <div class="contact__info">
+      <p class="eyebrow">Nous rencontrer</p>
+      <h2>Passez nous voir ou écrivez-nous</h2>
+      <p class="contact__address">📍 Adewi, à côté de l'entrée sud de l'Université de Lomé</p>
+      <div class="contact__phones">
+        <a href="tel:+22871079494">71 07 94 94</a>
+        <a href="tel:+22899290586">99 29 05 86</a>
+      </div>
+      <a href="https://wa.me/22871079494" target="_blank" rel="noopener" class="btn btn--primary">Discuter sur WhatsApp</a>
+    </div>
+
+    <form class="contact__form" id="contactForm">
+      <p class="eyebrow">Une question ? Une pré-inscription ?</p>
+      <label>
+        Nom complet
+        <input type="text" name="nom" required placeholder="Votre nom" />
+      </label>
+      <label>
+        Téléphone
+        <input type="tel" name="telephone" required placeholder="Ex : 90 00 00 00" />
+      </label>
+      <label>
+        Formation qui vous intéresse
+        <select name="formation" id="formationSelect">
+          <option value="">— Sélectionner —</option>
+        </select>
+      </label>
+      <label>
+        Message
+        <textarea name="message" rows="3" placeholder="Votre message (facultatif)"></textarea>
+      </label>
+      <button type="submit" class="btn btn--primary btn--full">Envoyer ma demande</button>
+      <p class="contact__status" id="contactStatus" role="status"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+  <div class="footer__inner">
+    <div>
+      <span class="nav__logo nav__logo--footer">VE</span>
+      <p>Vitrine de l'Étudiant<br>Adewi, entrée sud — Université de Lomé</p>
+    </div>
+    <div>
+      <h3>Filières</h3>
+      <ul id="footerFilieres"><!-- injecté par js/app.js --></ul>
+    </div>
+    <div>
+      <h3>Contact</h3>
+      <ul>
+        <li><a href="tel:+22871079494">71 07 94 94</a></li>
+        <li><a href="tel:+22899290586">99 29 05 86</a></li>
+        <li><a href="https://wa.me/22871079494" target="_blank" rel="noopener">WhatsApp</a></li>
+      </ul>
+    </div>
+  </div>
+  <p class="footer__bottom">© <span id="year"></span> Vitrine de l'Étudiant — Agrément N°2024/037/MEPST/MET/CAB/SE-CCCS</p>
+</footer>
+
+<!-- ================= MODALE FLYER (formations d'une filière) ================= -->
+<div class="modal" id="flyerModal" aria-hidden="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel modal__panel--flyer" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <header class="modal__head" id="modalHead">
+      <div class="modal__ribbon" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div class="modal__head-inner">
+        <span class="modal__badge">VITRINE DE L'ÉTUDIANT</span>
+        <p class="modal__tag">CFA · CAP · BT · MODULAIRES</p>
+        <p class="modal__eyebrow" id="modalEyebrow"></p>
+        <h3 id="modalTitle"></h3>
+        <p id="modalResume"></p>
+      </div>
+    </header>
+    <div class="modal__tablewrap">
+      <table class="modal__table">
+        <thead>
+          <tr>
+            <th>N°</th>
+            <th>Formation</th>
+            <th>Frais d'inscription</th>
+            <th>Frais de formation</th>
+            <th>Durée</th>
+          </tr>
+        </thead>
+        <tbody id="modalTbody"></tbody>
+      </table>
+    </div>
+    <footer class="modal__foot">
+      <div class="modal__foot-contact">
+        <span>📍 Adewi, entrée sud — Université de Lomé</span>
+        <span>📞 71 07 94 94 · 99 29 05 86</span>
+      </div>
+      <a class="btn modal__foot-btn" id="modalWhatsapp" target="_blank" rel="noopener">S'inscrire via WhatsApp</a>
+    </footer>
+  </div>
+</div>
+<!-- ================= MODALE SERVICE (procédure détaillée) ================= -->
+<div class="modal" id="serviceModal" aria-hidden="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__panel modal__panel--small" role="dialog" aria-modal="true" aria-labelledby="serviceModalTitle">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <header class="modal__head" id="serviceModalHead">
+      <p class="modal__eyebrow">Service d'accompagnement</p>
+      <h3 id="serviceModalTitle"></h3>
+      <p id="serviceModalTexte"></p>
+    </header>
+    <div class="modal__procedure" id="serviceModalProcedure"></div>
+    <footer class="modal__foot">
+      <a class="btn btn--primary" id="serviceModalWhatsapp" target="_blank" rel="noopener">Être accompagné(e) sur WhatsApp</a>
+    </footer>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Inscription — Vitrine de l'Étudiant</title>
+<meta name="description" content="Inscrivez-vous en ligne à une formation Vitrine de l'Étudiant en 3 étapes." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Réutilise les couleurs, polices et boutons déjà définis pour le site -->
+<link rel="stylesheet" href="css/style.css" />
+<!-- Styles propres au portail d'inscription -->
+<link rel="stylesheet" href="css/inscription.css" />
+</head>
+<body class="inscription-page">
+
+<!-- ================= EN-TÊTE ================= -->
+<header class="insc-header">
+  <div class="insc-header__inner">
+    <a href="index.html" class="nav__brand">
+      <span class="nav__logo">VE</span>
+      <span class="nav__brandtext">Vitrine <em>de l'Étudiant</em></span>
+    </a>
+    <a href="index.html" class="insc-header__back">← Retour au site</a>
+  </div>
+</header>
+
+<main class="insc">
+  <div class="insc__intro">
+    <p class="eyebrow">Portail d'inscription</p>
+    <h1>Inscrivez-vous en 3 étapes</h1>
+    <p class="insc__lead">Renseignez vos informations, choisissez votre formation, puis confirmez votre
+      demande. Notre équipe vous recontacte rapidement pour finaliser votre dossier.</p>
+  </div>
+
+  <!-- ============ INDICATEUR D'ÉTAPES ============ -->
+  <ol class="insc-steps" id="inscSteps" aria-label="Étapes du formulaire">
+    <li class="insc-steps__item is-active" data-step="1">
+      <span class="insc-steps__bullet">1</span>
+      <span class="insc-steps__label">Vos informations</span>
+    </li>
+    <li class="insc-steps__item" data-step="2">
+      <span class="insc-steps__bullet">2</span>
+      <span class="insc-steps__label">Votre demande</span>
+    </li>
+    <li class="insc-steps__item" data-step="3">
+      <span class="insc-steps__bullet">3</span>
+      <span class="insc-steps__label">Confirmation</span>
+    </li>
+  </ol>
+
+  <form class="insc-card" id="inscForm" novalidate>
+
+    <!-- ===== ÉTAPE 1 — INFOS PERSONNELLES ===== -->
+    <section class="insc-panel is-active" data-panel="1" aria-labelledby="panel1Title">
+      <h2 id="panel1Title">Vos informations</h2>
+      <p class="insc-panel__sub">De quoi vous recontacter au plus vite.</p>
+
+      <div class="insc-field">
+        <label for="champNom">Nom complet <span aria-hidden="true">*</span></label>
+        <input type="text" id="champNom" name="nom" required placeholder="Ex : Akossiwa Mensah" />
+        <span class="insc-error" data-error-for="champNom">Merci d'indiquer votre nom complet.</span>
+      </div>
+
+      <div class="insc-field">
+        <label for="champTelephone">Téléphone <span aria-hidden="true">*</span></label>
+        <input type="tel" id="champTelephone" name="telephone" required placeholder="Ex : 90 00 00 00" />
+        <span class="insc-error" data-error-for="champTelephone">Merci d'indiquer un numéro de téléphone.</span>
+      </div>
+
+      <div class="insc-field">
+        <label for="champEmail">Email <span class="insc-field__optionnel">(facultatif)</span></label>
+        <input type="email" id="champEmail" name="email" placeholder="vous@exemple.com" />
+      </div>
+
+      <div class="insc-field">
+        <label for="champVille">Ville / quartier <span class="insc-field__optionnel">(facultatif)</span></label>
+        <input type="text" id="champVille" name="ville" placeholder="Ex : Adewi, Lomé" />
+      </div>
+    </section>
+
+    <!-- ===== ÉTAPE 2 — TYPE DE DEMANDE ===== -->
+    <section class="insc-panel" data-panel="2" aria-labelledby="panel2Title">
+      <h2 id="panel2Title">Votre demande</h2>
+      <p class="insc-panel__sub">Que souhaitez-vous faire ?</p>
+
+      <div class="insc-type-toggle" id="inscTypeToggle" role="tablist">
+        <button type="button" class="insc-type-toggle__btn is-active" data-type="formation" role="tab" aria-selected="true">
+          🎓 M'inscrire à une formation
+        </button>
+        <button type="button" class="insc-type-toggle__btn" data-type="service" role="tab" aria-selected="false">
+          📄 Demande administrative <span>(Nationalité, CNI, Passeport…)</span>
+        </button>
+      </div>
+      <input type="hidden" name="demandeType" id="champDemandeType" value="formation" />
+
+      <!-- --- Sous-bloc : inscription à une formation --- -->
+      <div class="insc-subpanel" data-type-panel="formation">
+        <div class="insc-field">
+          <label for="champFiliere">Filière <span aria-hidden="true">*</span></label>
+          <select id="champFiliere" name="filiere" required>
+            <option value="">— Sélectionner une filière —</option>
+          </select>
+          <span class="insc-error" data-error-for="champFiliere">Merci de choisir une filière.</span>
+        </div>
+
+        <div class="insc-field">
+          <label for="champFormation">Formation <span aria-hidden="true">*</span></label>
+          <select id="champFormation" name="formation" required disabled>
+            <option value="">— Choisissez d'abord une filière —</option>
+          </select>
+          <span class="insc-error" data-error-for="champFormation">Merci de choisir une formation.</span>
+        </div>
+
+        <div class="insc-formation-card" id="inscFormationCard" hidden>
+          <span class="insc-formation-card__label">Formation sélectionnée</span>
+          <strong id="inscFormationNom"></strong>
+          <div class="insc-formation-card__grid">
+            <div><span>Frais d'inscription</span><strong id="inscFormationInscription"></strong></div>
+            <div><span>Frais de formation</span><strong id="inscFormationFrais"></strong></div>
+            <div><span>Durée</span><strong id="inscFormationDuree"></strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- --- Sous-bloc : demande administrative --- -->
+      <div class="insc-subpanel" data-type-panel="service" hidden>
+        <div class="insc-field">
+          <label for="champService">Service souhaité <span aria-hidden="true">*</span></label>
+          <select id="champService" name="service" disabled>
+            <option value="">— Sélectionner un service —</option>
+          </select>
+          <span class="insc-error" data-error-for="champService">Merci de choisir un service.</span>
+        </div>
+
+        <div class="insc-service-card" id="inscServiceCard" hidden>
+          <span class="insc-service-card__label">Service sélectionné</span>
+          <strong id="inscServiceNom"></strong>
+          <p id="inscServiceTexte"></p>
+        </div>
+
+        <div class="insc-field">
+          <label for="champCommentaire">Commentaire / précisions <span class="insc-field__optionnel">(facultatif)</span></label>
+          <textarea id="champCommentaire" name="commentaire" rows="4" placeholder="Ex : je souhaite une nationalité togolaise par filiation, mon dossier est déjà partiellement constitué..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== ÉTAPE 3 — CONFIRMATION ===== -->
+    <section class="insc-panel" data-panel="3" aria-labelledby="panel3Title">
+      <h2 id="panel3Title">Vérifiez et confirmez</h2>
+      <p class="insc-panel__sub">Relisez votre demande avant de l'envoyer.</p>
+
+      <dl class="insc-recap" id="inscRecap">
+        <div><dt>Nom complet</dt><dd id="recapNom">—</dd></div>
+        <div><dt>Téléphone</dt><dd id="recapTelephone">—</dd></div>
+        <div><dt>Email</dt><dd id="recapEmail">—</dd></div>
+        <div><dt>Ville</dt><dd id="recapVille">—</dd></div>
+        <div><dt>Type de demande</dt><dd id="recapType">—</dd></div>
+        <div data-recap-row="formation"><dt>Filière</dt><dd id="recapFiliere">—</dd></div>
+        <div data-recap-row="formation"><dt>Formation</dt><dd id="recapFormation">—</dd></div>
+        <div data-recap-row="service" hidden><dt>Service demandé</dt><dd id="recapService">—</dd></div>
+        <div data-recap-row="service" hidden><dt>Commentaire</dt><dd id="recapCommentaire">—</dd></div>
+      </dl>
+
+      <p class="insc-recap__note">En confirmant, vous acceptez d'être recontacté(e) par Vitrine de
+        l'Étudiant au sujet de cette demande.</p>
+    </section>
+
+    <!-- ===== ÉCRAN DE SUCCÈS ===== -->
+    <section class="insc-success" data-panel="success" hidden>
+      <div class="insc-success__icon">✓</div>
+      <h2>Votre demande est bien envoyée !</h2>
+      <p id="inscSuccessMessage">Notre équipe vous recontacte très vite pour finaliser votre inscription.</p>
+      <div class="insc-success__actions">
+        <a href="index.html" class="btn btn--ghost-blue">Retour à l'accueil</a>
+        <a href="https://wa.me/22871079494" target="_blank" rel="noopener" class="btn btn--primary">Nous écrire sur WhatsApp</a>
+      </div>
+    </section>
+
+    <!-- ===== NAVIGATION DU FORMULAIRE ===== -->
+    <div class="insc-nav">
+      <button type="button" class="btn btn--ghost-blue" id="inscPrev" hidden>← Précédent</button>
+      <span class="insc-nav__spacer"></span>
+      <button type="button" class="btn btn--primary" id="inscNext">Suivant →</button>
+      <button type="submit" class="btn btn--primary" id="inscSubmit" hidden>Confirmer mon inscription</button>
+    </div>
+    <p class="insc-status" id="inscStatus" role="status"></p>
+  </form>
+</main>
+
+<footer class="insc-footer">
+  <p>© <span id="inscYear"></span> Vitrine de l'Étudiant — Agrément N°2024/037/MEPST/MET/CAB/SE-CCCS</p>
+</footer>
+
+<script src="js/data.js"></script>
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/inscription.js"></script>
+</body>
+</html>

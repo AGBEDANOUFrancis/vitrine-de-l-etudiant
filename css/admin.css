@@ -1,0 +1,303 @@
+/* ============================================================
+   PORTAIL ADMIN — styles additifs
+   Réutilise les variables et composants de css/style.css et
+   css/inscription.css (classes .insc-field, .btn, .modal__close).
+============================================================ */
+
+.admin-page { background: var(--gris-clair); min-height: 100vh; }
+
+/* ---------- Écran de connexion ---------- */
+.adm-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(160deg, var(--bleu-nuit), #14335E 60%, var(--bleu-vif));
+}
+.adm-login[hidden] {
+  display: none;
+}
+.adm-login__card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--blanc);
+  border-radius: var(--radius-l);
+  box-shadow: var(--shadow-pop);
+  padding: 40px 34px;
+  text-align: center;
+}
+.adm-login__logo { margin: 0 auto 18px; }
+.adm-login__card h1 { font-size: 1.5rem; color: var(--bleu-nuit); }
+.adm-login__sub { margin: 8px 0 26px; color: var(--texte-doux); font-size: 0.92rem; }
+.adm-login__card .insc-field { text-align: left; margin-bottom: 16px; }
+.adm-login__error {
+  min-height: 1.2em;
+  margin-top: 14px;
+  font-size: 0.86rem;
+  color: var(--rouge);
+  font-weight: 600;
+}
+.adm-login__hint {
+  margin-top: 18px;
+  font-size: 0.8rem;
+  color: var(--texte-doux);
+  background: var(--gris-clair);
+  border-radius: 10px;
+  padding: 12px 14px;
+  text-align: left;
+  line-height: 1.5;
+}
+.adm-login__hint code { background: var(--bleu-clair); padding: 1px 5px; border-radius: 4px; }
+
+/* ---------- Application admin ---------- */
+.adm-app[hidden] {
+  display: none;
+}
+
+/* ---------- En-tête admin ---------- */
+.adm-header { background: var(--blanc); border-bottom: 1px solid var(--gris-ligne); }
+.adm-header__inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.adm-header__right { display: flex; align-items: center; gap: 12px; }
+.adm-header__user { font-size: 0.85rem; color: var(--texte-doux); font-weight: 600; }
+
+/* ---------- Onglets ---------- */
+.adm-tabs {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 24px 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.adm-tabs__btn {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--gris-ligne);
+  background: var(--blanc);
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--texte-doux);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adm-tabs__btn.is-active { background: var(--bleu-nuit); border-color: var(--bleu-nuit); color: var(--blanc); }
+.adm-tabs__count {
+  background: rgba(255,255,255,0.25);
+  border-radius: 999px;
+  padding: 1px 8px;
+  font-size: 0.75rem;
+}
+.adm-tabs__btn:not(.is-active) .adm-tabs__count { background: var(--bleu-clair); color: var(--bleu-vif); }
+
+/* ---------- Contenu principal ---------- */
+.adm-main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 120px; }
+.adm-panel { display: none; }
+.adm-panel.is-active { display: block; }
+.adm-panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.adm-panel__head--spaced { margin-top: 48px; }
+.adm-panel__head h2 { font-family: var(--font-display); font-size: 1.3rem; color: var(--bleu-nuit); }
+.adm-panel__head p { margin-top: 4px; color: var(--texte-doux); font-size: 0.9rem; }
+
+/* ---------- Filtres (demandes) ---------- */
+.adm-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.adm-filter {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--gris-ligne);
+  background: var(--blanc);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--texte-doux);
+}
+.adm-filter.is-active { background: var(--bleu-clair); border-color: var(--bleu-vif); color: var(--bleu-nuit); }
+.adm-empty { padding: 40px; text-align: center; color: var(--texte-doux); background: var(--blanc); border-radius: var(--radius-m); }
+
+/* ---------- Liste des demandes ---------- */
+.adm-list { display: flex; flex-direction: column; gap: 10px; }
+.adm-demande {
+  background: var(--blanc);
+  border: 1px solid var(--gris-ligne);
+  border-radius: var(--radius-s);
+  padding: 16px 18px;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 16px;
+}
+.adm-demande.is-nouveau { border-left: 4px solid var(--rouge); }
+.adm-demande__badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bleu-clair);
+  color: var(--bleu-vif);
+  white-space: nowrap;
+}
+.adm-demande__badge--service { background: #FCE9EB; color: var(--rouge-fonce); }
+.adm-demande__main strong { font-family: var(--font-display); color: var(--bleu-nuit); font-size: 0.98rem; }
+.adm-demande__main p { margin-top: 2px; font-size: 0.85rem; color: var(--texte-doux); }
+.adm-demande__date { font-size: 0.78rem; color: var(--texte-doux); white-space: nowrap; }
+.adm-demande__actions { display: flex; gap: 8px; }
+.adm-icon-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--gris-ligne);
+  background: var(--gris-clair);
+  font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.adm-icon-btn:hover { border-color: var(--bleu-vif); }
+.adm-icon-btn--danger:hover { border-color: var(--rouge); background: #FCE9EB; }
+
+@media (max-width: 720px) {
+  .adm-demande { grid-template-columns: 1fr; }
+  .adm-demande__actions { justify-content: flex-end; }
+}
+
+/* ---------- Grille filières / services ---------- */
+.adm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.adm-card {
+  background: var(--blanc);
+  border: 1px solid var(--gris-ligne);
+  border-radius: var(--radius-m);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.adm-card__eyebrow { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--texte-doux); }
+.adm-card h3 { font-family: var(--font-display); font-size: 1.05rem; color: var(--bleu-nuit); }
+.adm-card p { font-size: 0.88rem; color: var(--texte-doux); line-height: 1.5; flex-grow: 1; }
+.adm-card__actions { display: flex; gap: 8px; margin-top: 6px; }
+.adm-card__actions .btn { flex: 1; padding: 9px 12px; font-size: 0.82rem; }
+
+/* ---------- Chips destinations ---------- */
+.adm-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.adm-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  background: var(--blanc);
+  border: 1px solid var(--gris-ligne);
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--bleu-nuit);
+}
+.adm-chip button {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: var(--gris-clair);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+.adm-chip button:hover { background: var(--rouge); color: var(--blanc); }
+.adm-inline-form { display: flex; gap: 10px; max-width: 420px; }
+.adm-inline-form input {
+  flex: 1;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--gris-ligne);
+  background: var(--blanc);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+}
+.adm-inline-form input:focus { border-color: var(--bleu-vif); outline: none; }
+
+/* ---------- Barre de sauvegarde flottante ---------- */
+.adm-savebar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: var(--bleu-nuit);
+  color: var(--blanc);
+  padding: 14px 18px 14px 22px;
+  border-radius: 999px;
+  box-shadow: var(--shadow-pop);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.88rem;
+  z-index: 50;
+}
+.adm-savebar .btn--primary { padding: 9px 18px; }
+
+/* ---------- Modales admin (filière / service / demande) ---------- */
+.adm-modal { position: fixed; inset: 0; z-index: 100; display: none; }
+.adm-modal.is-open { display: block; }
+.adm-modal__backdrop { position: absolute; inset: 0; background: rgba(10, 38, 71, 0.55); backdrop-filter: blur(2px); }
+.adm-modal__panel {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 5vh auto;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--blanc);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-pop);
+  padding: 36px 40px 32px;
+  animation: insc-fade 0.2s ease;
+}
+.adm-modal__panel--small { max-width: 480px; }
+.adm-modal__panel h3 { font-size: 1.25rem; color: var(--bleu-nuit); margin-bottom: 20px; }
+.adm-modal__subtitle { margin: 24px 0 12px; font-size: 0.95rem; color: var(--bleu-nuit); }
+.adm-modal__grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.adm-modal__actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 26px; }
+.adm-modal__error { margin-top: 12px; color: var(--rouge); font-size: 0.86rem; font-weight: 600; min-height: 1.2em; }
+
+/* ---------- Ligne "formation" éditable dans la modale filière ---------- */
+.adm-formation-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.adm-formation-row input {
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--gris-ligne);
+  background: var(--gris-clair);
+  font-size: 0.85rem;
+  font-family: var(--font-body);
+  width: 100%;
+}
+.adm-formation-row input:focus { border-color: var(--bleu-vif); outline: none; background: var(--blanc); }
+.adm-formation-row button {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--gris-ligne);
+  background: var(--gris-clair);
+}
+.adm-formation-row button:hover { border-color: var(--rouge); background: #FCE9EB; }
+
+@media (max-width: 640px) {
+  .adm-modal__panel { padding: 28px 22px; margin: 0; border-radius: 0; max-height: 100vh; }
+  .adm-modal__grid2 { grid-template-columns: 1fr; }
+  .adm-formation-row { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Administration — Vitrine de l'Étudiant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Réutilise les couleurs et polices déjà définies pour le site -->
+<link rel="stylesheet" href="css/style.css" />
+<!-- Réutilise les champs de formulaire du portail d'inscription -->
+<link rel="stylesheet" href="css/inscription.css" />
+<!-- Styles propres au portail admin -->
+<link rel="stylesheet" href="css/admin.css" />
+</head>
+<body class="admin-page">
+
+<!-- ================= ÉCRAN DE CONNEXION ================= -->
+<div class="adm-login" id="loginScreen">
+  <form class="adm-login__card" id="loginForm">
+    <span class="nav__logo adm-login__logo">VE</span>
+    <h1>Administration</h1>
+    <p class="adm-login__sub">Vitrine de l'Étudiant — accès réservé à l'équipe.</p>
+
+    <div class="insc-field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" required autocomplete="username" placeholder="admin@vitrine-etudiant.tg" />
+    </div>
+    <div class="insc-field">
+      <label for="loginPassword">Mot de passe</label>
+      <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••" />
+    </div>
+
+    <button type="submit" class="btn btn--primary btn--full" id="loginSubmit">Se connecter</button>
+    <p class="adm-login__error" id="loginError"></p>
+    <p class="adm-login__hint" id="loginConfigHint" hidden>
+      ⚠️ Firebase n'est pas encore configuré dans <code>js/firebase-config.js</code>.
+      Le portail admin ne peut pas fonctionner tant que ce n'est pas fait — voir <code>ADMIN.md</code>.
+    </p>
+  </form>
+</div>
+
+<!-- ================= APPLICATION ADMIN ================= -->
+<div class="adm-app" id="adminApp" hidden>
+
+  <header class="adm-header">
+    <div class="adm-header__inner">
+      <a href="index.html" class="nav__brand">
+        <span class="nav__logo">VE</span>
+        <span class="nav__brandtext">Vitrine <em>de l'Étudiant</em></span>
+      </a>
+      <div class="adm-header__right">
+        <span class="adm-header__user" id="adminUserEmail"></span>
+        <a href="index.html" class="btn btn--ghost-blue">Voir le site</a>
+        <button type="button" class="btn btn--ghost-blue" id="logoutBtn">Se déconnecter</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="adm-tabs">
+    <button type="button" class="adm-tabs__btn is-active" data-tab="demandes">
+      Demandes reçues <span class="adm-tabs__count" id="countDemandes">0</span>
+    </button>
+    <button type="button" class="adm-tabs__btn" data-tab="formations">Formations</button>
+    <button type="button" class="adm-tabs__btn" data-tab="international">International &amp; Services</button>
+  </nav>
+
+  <main class="adm-main">
+
+    <!-- ===================== ONGLET DEMANDES ===================== -->
+    <section class="adm-panel is-active" data-tab-panel="demandes">
+      <div class="adm-panel__head">
+        <div>
+          <h2>Demandes reçues</h2>
+          <p>Formulaire de contact et portail d'inscription (formations + démarches administratives).</p>
+        </div>
+        <button type="button" class="btn btn--ghost-blue" id="refreshDemandes">↻ Actualiser</button>
+      </div>
+
+      <div class="adm-filters" id="demandesFilters">
+        <button type="button" class="adm-filter is-active" data-filter="tous">Toutes</button>
+        <button type="button" class="adm-filter" data-filter="nouveau">Nouvelles</button>
+        <button type="button" class="adm-filter" data-filter="contact">Contact</button>
+        <button type="button" class="adm-filter" data-filter="inscription-formation">Inscriptions formation</button>
+        <button type="button" class="adm-filter" data-filter="inscription-service">Démarches admin.</button>
+      </div>
+
+      <div class="adm-empty" id="demandesEmpty" hidden>Aucune demande pour l'instant.</div>
+      <div class="adm-list" id="demandesList"></div>
+    </section>
+
+    <!-- ===================== ONGLET FORMATIONS ===================== -->
+    <section class="adm-panel" data-tab-panel="formations">
+      <div class="adm-panel__head">
+        <div>
+          <h2>Filières &amp; formations</h2>
+          <p>Ce que voient les visiteurs dans les flyers cliquables du site.</p>
+        </div>
+        <button type="button" class="btn btn--primary" id="addFiliereBtn">+ Ajouter une filière</button>
+      </div>
+
+      <div class="adm-grid" id="filieresList"></div>
+    </section>
+
+    <!-- ===================== ONGLET INTERNATIONAL & SERVICES ===================== -->
+    <section class="adm-panel" data-tab-panel="international">
+      <div class="adm-panel__head">
+        <div>
+          <h2>Destinations à l'international</h2>
+          <p>Pays proposés pour les contrats de travail.</p>
+        </div>
+      </div>
+      <div class="adm-chips" id="destinationsChips"></div>
+      <form class="adm-inline-form" id="addDestinationForm">
+        <input type="text" id="newDestination" placeholder="Ajouter un pays (ex : Belgique)" required />
+        <button type="submit" class="btn btn--ghost-blue">+ Ajouter</button>
+      </form>
+
+      <div class="adm-panel__head adm-panel__head--spaced">
+        <div>
+          <h2>Services d'accompagnement</h2>
+          <p>Nationalité, CNI, passeport, etc.</p>
+        </div>
+        <button type="button" class="btn btn--primary" id="addServiceBtn">+ Ajouter un service</button>
+      </div>
+      <div class="adm-grid" id="servicesList"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ================= MODALE : ÉDITER UNE FILIÈRE ================= -->
+<div class="adm-modal" id="filiereModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3 id="filiereModalTitle">Modifier la filière</h3>
+
+    <div class="adm-modal__grid2">
+      <div class="insc-field">
+        <label for="fNumero">Numéro affiché</label>
+        <input type="text" id="fNumero" placeholder="Ex : 01" />
+      </div>
+      <div class="insc-field">
+        <label for="fPartie">Partie</label>
+        <input type="text" id="fPartie" placeholder="Ex : 1ère partie" />
+      </div>
+    </div>
+    <div class="insc-field">
+      <label for="fTitre">Titre de la filière *</label>
+      <input type="text" id="fTitre" required placeholder="Ex : Secrétariat & Assistanat de Gestion" />
+    </div>
+    <div class="insc-field">
+      <label for="fResume">Résumé (affiché sur la carte)</label>
+      <textarea id="fResume" rows="2" placeholder="Une phrase qui donne envie de cliquer"></textarea>
+    </div>
+    <div class="insc-field">
+      <label for="fAccent">Couleur d'accent</label>
+      <select id="fAccent">
+        <option value="bleu">Bleu</option>
+        <option value="rouge">Rouge</option>
+      </select>
+    </div>
+
+    <h4 class="adm-modal__subtitle">Formations de cette filière</h4>
+    <div id="formationRows"></div>
+    <button type="button" class="btn btn--ghost-blue" id="addFormationRow">+ Ajouter une formation</button>
+
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
+      <button type="button" class="btn btn--primary" id="saveFiliereBtn">Enregistrer la filière</button>
+    </div>
+    <p class="adm-modal__error" id="filiereModalError"></p>
+  </div>
+</div>
+
+<!-- ================= MODALE : ÉDITER UN SERVICE ================= -->
+<div class="adm-modal" id="serviceModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel adm-modal__panel--small" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3 id="serviceModalTitle">Modifier le service</h3>
+
+    <div class="insc-field">
+      <label for="sTitre">Titre *</label>
+      <input type="text" id="sTitre" required placeholder="Ex : Nationalité" />
+    </div>
+    <div class="insc-field">
+      <label for="sTexte">Description</label>
+      <textarea id="sTexte" rows="3" placeholder="Description courte du service"></textarea>
+    </div>
+    <div class="insc-field">
+      <label for="sProcedure">Procédure (une étape par ligne)</label>
+      <textarea id="sProcedure" rows="6" placeholder="1. Première étape...&#10;2. Deuxième étape..."></textarea>
+    </div>
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
+      <button type="button" class="btn btn--primary" id="saveServiceBtn">Enregistrer le service</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE : DÉTAIL D'UNE DEMANDE ================= -->
+<div class="adm-modal" id="demandeModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel adm-modal__panel--small" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3>Détail de la demande</h3>
+    <dl class="insc-recap" id="demandeDetail"></dl>
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>
