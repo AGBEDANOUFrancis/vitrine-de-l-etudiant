@@ -668,3 +668,91 @@ button { font-family: inherit; cursor: pointer; }
 .modal__panel--small .modal__eyebrow { color: #C9D6EC; }
 .modal__panel--small .modal__head h3 { color: var(--blanc); }
 .modal__panel--small .modal__head p:last-child { color: #E3EAF7; }
+/* ============================== RÉALISATIONS & TÉMOIGNAGES ============================== */
+.realisations {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 6px 6px 20px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bleu-vif) var(--gris-clair);
+}
+.realisations::-webkit-scrollbar { height: 8px; }
+.realisations::-webkit-scrollbar-track { background: var(--gris-clair); border-radius: 999px; }
+.realisations::-webkit-scrollbar-thumb { background: var(--bleu-vif); border-radius: 999px; }
+
+.realisations-empty {
+  color: var(--texte-doux);
+  font-size: 0.95rem;
+  padding: 20px 0;
+}
+
+.realisation-card {
+  scroll-snap-align: start;
+  flex: 0 0 300px;
+  background: var(--blanc);
+  border: 1px solid var(--gris-ligne);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.realisation-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-pop);
+}
+.realisation-card__photo {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--gris-clair);
+}
+.realisation-card__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.realisation-card__commentaire {
+  padding: 20px 20px 8px;
+  color: var(--texte);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  font-style: italic;
+}
+.realisation-card__commentaire::before { content: "“ "; color: var(--rouge); font-weight: 800; }
+.realisation-card__commentaire::after { content: " ”"; color: var(--rouge); font-weight: 800; }
+.realisation-card__auteur {
+  padding: 0 20px 20px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--bleu-vif);
+}
+
+@media (max-width: 720px) {
+  .realisation-card { flex-basis: 260px; }
+}
+#pageIndex {
+  background-image: linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.92)), url("../photo/fond-index.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+#pageAdmin {
+  background-image: linear-gradient(rgba(245,247,251,0.94), rgba(245,247,251,0.94)), url("../photo/fond-admin.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+#pageEtudiant {
+  background-image: linear-gradient(rgba(245,247,251,0.94), rgba(245,247,251,0.94)), url("../photo/fond-etudiant.jpg");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}

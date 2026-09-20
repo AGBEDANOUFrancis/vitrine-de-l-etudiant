@@ -16,6 +16,21 @@ import {
   chargerDemandes,
   mettreAJourDemande,
   supprimerDemande,
+  chargerProfilEtudiant,
+  creerCompteEtudiant,
+  chargerEtudiants,
+  supprimerProfilEtudiant,
+  chargerCours,
+  sauvegarderCours,
+  supprimerCours,
+  chargerExamens,
+  sauvegarderExamen,
+  supprimerExamen,
+  chargerTousLesResultats,
+  corrigerResultat,
+  chargerRealisations,
+  sauvegarderRealisation,
+  supprimerRealisation,
 } from "./firebase-config.js";
 
 /* ---------------------------------------------------------
@@ -30,6 +45,17 @@ let filtreDemandes = "tous";
 let formationsEnEdition = [];
 let filiereIdEnEdition = null; // null = nouvelle filière
 let serviceIdEnEdition = null; // null = nouveau service
+
+let etudiantsState = [];
+let coursState = [];
+let examensState = [];
+let resultatsState = [];
+let realisationsState = [];
+let coursIdEnEdition = null;
+let examenIdEnEdition = null;
+let questionsEnEdition = [];
+let correctionResultatId = null;
+let realisationIdEnEdition = null;
 
 /* ---------------------------------------------------------
    OUTILS
@@ -101,8 +127,15 @@ loginForm.addEventListener("submit", async (e) => {
 
 document.getElementById("logoutBtn").addEventListener("click", () => deconnexionAdmin());
 
-ecouterEtatConnexion((user) => {
+ecouterEtatConnexion(async (user) => {
   if (user) {
+    // Sécurité : un compte étudiant ne doit jamais pouvoir entrer dans l'admin.
+    const profilEtudiant = await chargerProfilEtudiant(user.uid);
+    if (profilEtudiant) {
+      loginError.textContent = "Ce compte est un compte étudiant : utilise le portail étudiant (etudiant.html).";
+      await deconnexionAdmin();
+      return;
+    }
     loginScreen.hidden = true;
     adminApp.hidden = false;
     document.getElementById("adminUserEmail").textContent = user.email || "";
@@ -134,11 +167,22 @@ async function chargerToutesLesDonnees() {
     ...s,
   }));
   demandesState = await chargerDemandes();
+  etudiantsState = await chargerEtudiants();
+  coursState = await chargerCours();
+  examensState = await chargerExamens();
+  resultatsState = await chargerTousLesResultats();
+  realisationsState = await chargerRealisations();
 
   renderFilieres();
   renderDestinations();
   renderServices();
   renderDemandes();
+  renderEtudiants();
+  renderCours();
+  renderExamens();
+  renderCopiesACorriger();
+  renderRealisations();
+  remplirSelectsFilieres();
 }
 
 /* ============================================================
@@ -449,20 +493,17 @@ function ouvrirServiceModal(service) {
   document.getElementById("serviceModalTitle").textContent = service ? "Modifier le service" : "Nouveau service";
   document.getElementById("sTitre").value = service?.titre || "";
   document.getElementById("sTexte").value = service?.texte || "";
-  document.getElementById("sProcedure").value = service?.procedure || "";
   ouvrirModal(serviceModal);
-
 }
 
 document.getElementById("saveServiceBtn").addEventListener("click", async () => {
   const titre = document.getElementById("sTitre").value.trim();
   if (!titre) return;
-    const texte = document.getElementById("sTexte").value.trim();
-  const procedure = document.getElementById("sProcedure").value.trim();
+  const texte = document.getElementById("sTexte").value.trim();
 
   const id = serviceIdEnEdition || genererId();
   const index = servicesState.findIndex((s) => s.id === id);
-  const serviceObj = { id, titre, texte, procedure };
+  const serviceObj = { id, titre, texte };
   if (index >= 0) servicesState[index] = serviceObj;
   else servicesState.push(serviceObj);
 
@@ -473,7 +514,630 @@ document.getElementById("saveServiceBtn").addEventListener("click", async () => 
 });
 
 /* ============================================================
-   7. MODALES — ouverture / fermeture génériques
+   7. SÉLECTEURS FILIÈRE → FORMATION (réutilisés dans plusieurs modales)
+============================================================ */
+function configurerSelectFiliereFormation(selectFiliereEl, selectFormationEl, valeurs = {}) {
+  selectFiliereEl.innerHTML = '<option value="">— Sélectionner —</option>' +
+    filieresState.map((f) => `<option value="${f.id}">${escapeHtml(f.titre)}</option>`).join("");
+
+  function remplirFormations(filiereId, formationSelectionnee) {
+    const filiere = filieresState.find((f) => f.id === filiereId);
+    if (!filiere) {
+      selectFormationEl.disabled = true;
+      selectFormationEl.innerHTML = '<option value="">— Choisis d\'abord une filière —</option>';
+      return;
+    }
+    selectFormationEl.disabled = false;
+    selectFormationEl.innerHTML = '<option value="">— Toutes les formations —</option>' +
+      filiere.formations.map((f) => `<option value="${escapeAttr(f.nom)}">${escapeHtml(f.nom)}</option>`).join("");
+    if (formationSelectionnee) selectFormationEl.value = formationSelectionnee;
+  }
+
+  selectFiliereEl.onchange = () => remplirFormations(selectFiliereEl.value, "");
+
+  if (valeurs.filiereId) {
+    selectFiliereEl.value = valeurs.filiereId;
+    remplirFormations(valeurs.filiereId, valeurs.formationNom);
+  } else {
+    selectFormationEl.disabled = true;
+    selectFormationEl.innerHTML = '<option value="">— Choisis d\'abord une filière —</option>';
+  }
+}
+
+function remplirSelectsFilieres() {
+  configurerSelectFiliereFormation(document.getElementById("eFiliere"), document.getElementById("eFormation"));
+  configurerSelectFiliereFormation(document.getElementById("cFiliere"), document.getElementById("cFormation"));
+  configurerSelectFiliereFormation(document.getElementById("exFiliere"), document.getElementById("exFormation"));
+}
+
+/* ============================================================
+   8. ONGLET « ÉTUDIANTS »
+============================================================ */
+const etudiantsList = document.getElementById("etudiantsList");
+const etudiantsEmpty = document.getElementById("etudiantsEmpty");
+
+function renderEtudiants() {
+  etudiantsEmpty.hidden = etudiantsState.length > 0;
+  etudiantsList.innerHTML = etudiantsState.map((e) => `
+    <div class="adm-demande" data-id="${e.id}">
+      <span class="adm-demande__badge">Étudiant</span>
+      <div class="adm-demande__main">
+        <strong>${escapeHtml(e.nom || "—")}</strong>
+        <p>${escapeHtml(e.email || "—")} · ${escapeHtml(e.formationNom || e.filiereId || "Aucune formation associée")}</p>
+      </div>
+      <span class="adm-demande__date">${fmtDate(e.creeLe)}</span>
+      <div class="adm-demande__actions">
+        <button type="button" class="adm-icon-btn adm-icon-btn--danger" data-delete="${e.id}" title="Retirer l'accès">🗑️</button>
+      </div>
+    </div>`).join("");
+}
+
+etudiantsList.addEventListener("click", async (e) => {
+  const id = e.target.dataset.delete;
+  if (!id) return;
+  const etu = etudiantsState.find((x) => x.id === id);
+  if (!etu) return;
+  if (!confirm(`Retirer l'accès étudiant de ${etu.nom} ? (son compte de connexion ne fonctionnera plus)`)) return;
+  etudiantsState = etudiantsState.filter((x) => x.id !== id);
+  renderEtudiants();
+  await supprimerProfilEtudiant(id);
+});
+
+const etudiantModal = document.getElementById("etudiantModal");
+document.getElementById("addEtudiantBtn").addEventListener("click", () => {
+  ["eNom", "eEmail", "eMotDePasse", "eTelephone"].forEach((id) => (document.getElementById(id).value = ""));
+  document.getElementById("etudiantModalError").textContent = "";
+  configurerSelectFiliereFormation(document.getElementById("eFiliere"), document.getElementById("eFormation"));
+  ouvrirModal(etudiantModal);
+});
+
+document.getElementById("saveEtudiantBtn").addEventListener("click", async () => {
+  const nom = document.getElementById("eNom").value.trim();
+  const email = document.getElementById("eEmail").value.trim();
+  const motDePasse = document.getElementById("eMotDePasse").value;
+  const errorEl = document.getElementById("etudiantModalError");
+
+  if (!nom || !email || motDePasse.length < 6) {
+    errorEl.textContent = "Nom, email et mot de passe (6 caractères minimum) sont obligatoires.";
+    return;
+  }
+
+  const filiereId = document.getElementById("eFiliere").value;
+  const filiere = filieresState.find((f) => f.id === filiereId);
+
+  const btn = document.getElementById("saveEtudiantBtn");
+  btn.disabled = true;
+  btn.textContent = "Création…";
+
+  const resultat = await creerCompteEtudiant(email, motDePasse, {
+    nom,
+    telephone: document.getElementById("eTelephone").value.trim(),
+    filiereId,
+    filiereNom: filiere?.titre || "",
+    formationNom: document.getElementById("eFormation").value,
+  });
+
+  btn.disabled = false;
+  btn.textContent = "Créer le compte";
+
+  if (!resultat.ok) {
+    errorEl.textContent = resultat.error || "Impossible de créer ce compte.";
+    return;
+  }
+
+  etudiantsState = await chargerEtudiants();
+  renderEtudiants();
+  fermerModal(etudiantModal);
+});
+
+/* ============================================================
+   9. ONGLET « COURS »
+============================================================ */
+const coursListEl = document.getElementById("coursList");
+const coursEmpty = document.getElementById("coursEmpty");
+
+function renderCours() {
+  coursEmpty.hidden = coursState.length > 0;
+  coursListEl.innerHTML = coursState.map((c) => {
+    const filiere = filieresState.find((f) => f.id === c.filiereId);
+    const portee = filiere ? (c.formationNom ? `${filiere.titre} · ${c.formationNom}` : filiere.titre) : "⚠️ Aucune filière";
+    return `
+    <div class="adm-card">
+      <span class="adm-card__eyebrow">${escapeHtml(portee)}</span>
+      <h3>${escapeHtml(c.titre)}</h3>
+      <p>${escapeHtml(c.description || "")}</p>
+      <p style="font-size:0.82rem; color:var(--bleu-vif);">${c.fichierNom ? "📎 " + escapeHtml(c.fichierNom) : "Aucun fichier"}</p>
+      <div class="adm-card__actions">
+        <button type="button" class="btn btn--ghost-blue" data-edit="${c.id}">Modifier</button>
+        <button type="button" class="btn btn--ghost-blue" data-delete="${c.id}">Supprimer</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+coursListEl.addEventListener("click", (e) => {
+  const editId = e.target.dataset.edit;
+  const delId = e.target.dataset.delete;
+  if (editId) ouvrirCoursModal(coursState.find((c) => c.id === editId));
+  if (delId) supprimerCoursAction(delId);
+});
+
+async function supprimerCoursAction(id) {
+  const c = coursState.find((x) => x.id === id);
+  if (!c) return;
+  if (!confirm(`Supprimer le cours "${c.titre}" ?`)) return;
+  coursState = coursState.filter((x) => x.id !== id);
+  renderCours();
+  await supprimerCours(id, c.fichierNom);
+}
+
+const coursModal = document.getElementById("coursModal");
+document.getElementById("addCoursBtn").addEventListener("click", () => ouvrirCoursModal(null));
+
+function ouvrirCoursModal(cours) {
+  coursIdEnEdition = cours ? cours.id : null;
+  document.getElementById("coursModalTitle").textContent = cours ? "Modifier le cours" : "Nouveau cours";
+  document.getElementById("coursModalError").textContent = "";
+  document.getElementById("cFiliere").closest(".insc-field").classList.remove("has-error");
+  document.getElementById("cTitre").value = cours?.titre || "";
+  document.getElementById("cDescription").value = cours?.description || "";
+  document.getElementById("cFichier").value = "";
+  document.getElementById("cFichierActuel").textContent = cours?.fichierNom ? `(actuel : ${cours.fichierNom})` : "";
+  configurerSelectFiliereFormation(
+    document.getElementById("cFiliere"),
+    document.getElementById("cFormation"),
+    { filiereId: cours?.filiereId, formationNom: cours?.formationNom }
+  );
+  ouvrirModal(coursModal);
+}
+
+document.getElementById("saveCoursBtn").addEventListener("click", async () => {
+  const titre = document.getElementById("cTitre").value.trim();
+  const filiereId = document.getElementById("cFiliere").value;
+  const errorEl = document.getElementById("coursModalError");
+  document.getElementById("cFiliere").closest(".insc-field").classList.remove("has-error");
+
+  if (!titre) { errorEl.textContent = "Le titre du cours est obligatoire."; return; }
+  if (!filiereId) {
+    document.getElementById("cFiliere").closest(".insc-field").classList.add("has-error");
+    errorEl.textContent = "Choisis une filière : un cours doit toujours être associé à une filière pour être visible par les bons étudiants.";
+    return;
+  }
+
+  const fichier = document.getElementById("cFichier").files[0] || null;
+  const coursExistant = coursState.find((c) => c.id === coursIdEnEdition);
+
+  const btn = document.getElementById("saveCoursBtn");
+  btn.disabled = true;
+  btn.textContent = "Enregistrement…";
+
+  const ok = await sauvegarderCours({
+    id: coursIdEnEdition || undefined,
+    titre,
+    description: document.getElementById("cDescription").value.trim(),
+    filiereId,
+    formationNom: document.getElementById("cFormation").value,
+    fichierUrl: coursExistant?.fichierUrl,
+    fichierNom: coursExistant?.fichierNom,
+    creeLe: coursExistant?.creeLe,
+  }, fichier);
+
+  btn.disabled = false;
+  btn.textContent = "Enregistrer le cours";
+
+  if (!ok) { errorEl.textContent = "Échec de l'enregistrement (Firebase configuré ? voir ADMIN.md)."; return; }
+
+  coursState = await chargerCours();
+  renderCours();
+  fermerModal(coursModal);
+});
+
+/* ============================================================
+   10. ONGLET « EXAMENS »
+============================================================ */
+const examensListEl = document.getElementById("examensList");
+const examensEmpty = document.getElementById("examensEmpty");
+
+function renderExamens() {
+  examensEmpty.hidden = examensState.length > 0;
+  examensListEl.innerHTML = examensState.map((ex) => {
+    const typeLabel = ex.type === "qcm" ? "QCM" : ex.type === "pdf" ? "Sujet PDF" : "Questions ouvertes";
+    const detail = ex.type === "pdf"
+      ? (ex.fichierSujetNom ? `📎 ${ex.fichierSujetNom}` : "Aucun fichier")
+      : `${(ex.questions || []).length} question${(ex.questions || []).length > 1 ? "s" : ""}`;
+    return `
+    <div class="adm-card">
+      <span class="adm-card__type ${ex.type !== "qcm" ? "adm-card__type--ouvert" : ""}">${typeLabel}</span>
+      <h3>${escapeHtml(ex.titre)}</h3>
+      <p>${escapeHtml(ex.formationNom || "Toutes formations")} · ${escapeHtml(detail)}</p>
+      <div class="adm-card__actions">
+        <button type="button" class="btn btn--ghost-blue" data-edit="${ex.id}">Modifier</button>
+        <button type="button" class="btn btn--ghost-blue" data-delete="${ex.id}">Supprimer</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+examensListEl.addEventListener("click", (e) => {
+  const editId = e.target.dataset.edit;
+  const delId = e.target.dataset.delete;
+  if (editId) ouvrirExamenModal(examensState.find((ex) => ex.id === editId));
+  if (delId) supprimerExamenAction(delId);
+});
+
+async function supprimerExamenAction(id) {
+  const ex = examensState.find((x) => x.id === id);
+  if (!ex) return;
+  if (!confirm(`Supprimer l'examen "${ex.titre}" ?`)) return;
+  examensState = examensState.filter((x) => x.id !== id);
+  renderExamens();
+  await supprimerExamen(id);
+}
+
+const examenModal = document.getElementById("examenModal");
+const examenQuestionsEl = document.getElementById("examenQuestions");
+
+document.getElementById("addExamenBtn").addEventListener("click", () => ouvrirExamenModal(null));
+
+function basculerTypeExamenUI() {
+  const type = document.getElementById("exType").value;
+  document.getElementById("examenQuestionsSection").hidden = type === "pdf";
+  document.getElementById("examenPdfSection").hidden = type !== "pdf";
+  document.getElementById("qcmImportSection").hidden = type !== "qcm";
+}
+
+function ouvrirExamenModal(examen) {
+  examenIdEnEdition = examen ? examen.id : null;
+  document.getElementById("examenModalTitle").textContent = examen ? "Modifier l'examen" : "Nouvel examen";
+  document.getElementById("examenModalError").textContent = "";
+  document.getElementById("exTitre").value = examen?.titre || "";
+  document.getElementById("exType").value = examen?.type || "qcm";
+  document.getElementById("exImportQcm").value = "";
+  document.getElementById("exFichierSujet").value = "";
+  document.getElementById("exFichierSujetActuel").textContent = examen?.fichierSujetNom
+    ? `(actuel : ${examen.fichierSujetNom})` : "";
+  basculerTypeExamenUI();
+  configurerSelectFiliereFormation(
+    document.getElementById("exFiliere"),
+    document.getElementById("exFormation"),
+    { filiereId: examen?.filiereId, formationNom: examen?.formationNom }
+  );
+  questionsEnEdition = examen ? structuredClone(examen.questions || []) : [];
+  renderQuestionsEnEdition();
+  ouvrirModal(examenModal);
+}
+
+document.getElementById("exType").addEventListener("change", () => {
+  basculerTypeExamenUI();
+  renderQuestionsEnEdition();
+});
+
+function renderQuestionsEnEdition() {
+  const type = document.getElementById("exType").value;
+  if (type === "pdf") {
+    examenQuestionsEl.innerHTML = "";
+    return;
+  }
+  examenQuestionsEl.innerHTML = questionsEnEdition.map((q, i) => {
+    if (type === "qcm") {
+      const options = q.options && q.options.length ? q.options : ["", "", "", ""];
+      return `
+        <div class="adm-question-block" data-index="${i}">
+          <div class="adm-question-block__head">
+            <span>Question ${i + 1}</span>
+            <button type="button" data-remove-question="${i}">✕</button>
+          </div>
+          <textarea rows="2" data-field="enonce" placeholder="Énoncé de la question">${escapeHtml(q.enonce || "")}</textarea>
+          ${options.map((opt, j) => `
+            <div class="adm-question-block__option">
+              <input type="radio" name="bonne-${i}" data-option-correcte="${j}" ${Number(q.bonneReponseIndex) === j ? "checked" : ""} />
+              <input type="text" data-option="${j}" placeholder="Choix ${j + 1}" value="${escapeAttr(opt)}" />
+            </div>`).join("")}
+          <p class="adm-question-block__hint">Coche le bouton devant la bonne réponse.</p>
+        </div>`;
+    }
+    return `
+      <div class="adm-question-block" data-index="${i}">
+        <div class="adm-question-block__head">
+          <span>Question ${i + 1}</span>
+          <button type="button" data-remove-question="${i}">✕</button>
+        </div>
+        <textarea rows="2" data-field="enonce" placeholder="Énoncé de la question">${escapeHtml(q.enonce || "")}</textarea>
+        <p class="adm-question-block__hint">L'étudiant répondra librement ; tu corrigeras sa réponse toi-même.</p>
+      </div>`;
+  }).join("") || '<p class="adm-question-block__hint">Aucune question pour l\'instant.</p>';
+}
+
+examenQuestionsEl.addEventListener("input", (e) => {
+  const block = e.target.closest(".adm-question-block");
+  if (!block) return;
+  const i = Number(block.dataset.index);
+  if (e.target.dataset.field === "enonce") {
+    questionsEnEdition[i].enonce = e.target.value;
+  } else if (e.target.dataset.option !== undefined) {
+    if (!questionsEnEdition[i].options) questionsEnEdition[i].options = ["", "", "", ""];
+    questionsEnEdition[i].options[Number(e.target.dataset.option)] = e.target.value;
+  }
+});
+
+examenQuestionsEl.addEventListener("change", (e) => {
+  if (e.target.dataset.optionCorrecte === undefined) return;
+  const block = e.target.closest(".adm-question-block");
+  const i = Number(block.dataset.index);
+  questionsEnEdition[i].bonneReponseIndex = Number(e.target.dataset.optionCorrecte);
+});
+
+examenQuestionsEl.addEventListener("click", (e) => {
+  const i = e.target.dataset.removeQuestion;
+  if (i === undefined) return;
+  questionsEnEdition.splice(Number(i), 1);
+  renderQuestionsEnEdition();
+});
+
+document.getElementById("addQuestionBtn").addEventListener("click", () => {
+  const type = document.getElementById("exType").value;
+  questionsEnEdition.push(
+    type === "qcm"
+      ? { enonce: "", options: ["", "", "", ""], bonneReponseIndex: 0 }
+      : { enonce: "" }
+  );
+  renderQuestionsEnEdition();
+});
+
+/* ----- Import QCM en masse (copier-coller) ----- */
+function parserImportQcm(texte) {
+  const blocs = texte.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+  const questions = [];
+
+  for (const bloc of blocs) {
+    const lignes = bloc.split("\n").map((l) => l.trim()).filter(Boolean);
+    if (lignes.length === 0) continue;
+
+    const enonce = lignes[0].replace(/^\d+[.)]\s*/, "");
+    const options = [];
+    let bonneReponseIndex = 0;
+
+    for (let i = 1; i < lignes.length; i++) {
+      const ligne = lignes[i];
+      const matchReponse = ligne.match(/^r[ée]ponse\s*:?\s*([a-zA-Z])/i);
+      if (matchReponse) {
+        bonneReponseIndex = matchReponse[1].toLowerCase().charCodeAt(0) - 97;
+        continue;
+      }
+      const matchOption = ligne.match(/^([a-zA-Z])[).]\s*(.*)$/);
+      if (matchOption) {
+        options.push(matchOption[2].trim());
+      }
+    }
+
+    if (enonce && options.length >= 2) {
+      questions.push({ enonce, options, bonneReponseIndex });
+    }
+  }
+
+  return questions;
+}
+
+document.getElementById("importerQcmBtn").addEventListener("click", () => {
+  const texte = document.getElementById("exImportQcm").value.trim();
+  const errorEl = document.getElementById("examenModalError");
+  if (!texte) { errorEl.textContent = "Colle d'abord tes questions dans la zone prévue."; return; }
+
+  const questionsImportees = parserImportQcm(texte);
+  if (questionsImportees.length === 0) {
+    errorEl.textContent = "Aucune question reconnue. Vérifie le format (voir l'exemple dans la zone de texte).";
+    return;
+  }
+
+  errorEl.textContent = "";
+  questionsEnEdition = questionsEnEdition.concat(questionsImportees);
+  document.getElementById("exImportQcm").value = "";
+  renderQuestionsEnEdition();
+});
+
+document.getElementById("saveExamenBtn").addEventListener("click", async () => {
+  const titre = document.getElementById("exTitre").value.trim();
+  const errorEl = document.getElementById("examenModalError");
+  if (!titre) { errorEl.textContent = "Le titre de l'examen est obligatoire."; return; }
+
+  const type = document.getElementById("exType").value;
+  let questionsValides = [];
+  let fichierSujet = null;
+  const examenExistant = examensState.find((ex) => ex.id === examenIdEnEdition);
+
+  if (type === "pdf") {
+    fichierSujet = document.getElementById("exFichierSujet").files[0] || null;
+    if (!fichierSujet && !examenExistant?.fichierSujetUrl) {
+      errorEl.textContent = "Ajoute le PDF du sujet.";
+      return;
+    }
+  } else {
+    questionsValides = questionsEnEdition
+      .filter((q) => q.enonce && q.enonce.trim())
+      .map((q) => type === "qcm"
+        ? { enonce: q.enonce.trim(), options: (q.options || []).map((o) => o.trim()), bonneReponseIndex: Number(q.bonneReponseIndex) || 0 }
+        : { enonce: q.enonce.trim() });
+    if (questionsValides.length === 0) { errorEl.textContent = "Ajoute au moins une question avec un énoncé."; return; }
+  }
+
+  const btn = document.getElementById("saveExamenBtn");
+  btn.disabled = true;
+  btn.textContent = "Enregistrement…";
+
+  const ok = await sauvegarderExamen({
+    id: examenIdEnEdition || undefined,
+    titre,
+    type,
+    filiereId: document.getElementById("exFiliere").value,
+    formationNom: document.getElementById("exFormation").value,
+    questions: questionsValides,
+    fichierSujetUrl: examenExistant?.fichierSujetUrl,
+    fichierSujetNom: examenExistant?.fichierSujetNom,
+  }, fichierSujet);
+
+  btn.disabled = false;
+  btn.textContent = "Enregistrer l'examen";
+
+  if (!ok) { errorEl.textContent = "Échec de l'enregistrement (Firebase configuré ? voir ADMIN.md)."; return; }
+
+  examensState = await chargerExamens();
+  renderExamens();
+  fermerModal(examenModal);
+});
+
+/* ============================================================
+   11. COPIES À CORRIGER (questions ouvertes + PDF)
+============================================================ */
+const copiesList = document.getElementById("copiesList");
+const copiesEmpty = document.getElementById("copiesEmpty");
+const countCopiesAcorriger = document.getElementById("countCopiesAcorriger");
+
+function renderCopiesACorriger() {
+  const enAttente = resultatsState.filter((r) => r.type !== "qcm" && r.statut !== "corrige");
+  countCopiesAcorriger.textContent = enAttente.length;
+  copiesEmpty.hidden = enAttente.length > 0;
+
+  copiesList.innerHTML = enAttente.map((r) => `
+    <div class="adm-demande" data-id="${r.id}">
+      <span class="adm-demande__badge--service adm-demande__badge">À corriger</span>
+      <div class="adm-demande__main">
+        <strong>${escapeHtml(r.etudiantNom || "—")}</strong>
+        <p>${escapeHtml(r.examenTitre)}</p>
+      </div>
+      <span class="adm-demande__date">${fmtDate(r.dateSoumission)}</span>
+      <div class="adm-demande__actions">
+        <button type="button" class="adm-icon-btn" data-corriger="${r.id}" title="Corriger">✏️</button>
+      </div>
+    </div>`).join("");
+}
+
+copiesList.addEventListener("click", (e) => {
+  const id = e.target.dataset.corriger;
+  if (!id) return;
+  ouvrirCorrectionModal(resultatsState.find((r) => r.id === id));
+});
+
+const correctionModal = document.getElementById("correctionModal");
+function ouvrirCorrectionModal(resultat) {
+  correctionResultatId = resultat.id;
+  const examen = examensState.find((ex) => ex.id === resultat.examenId);
+  document.getElementById("correctionEtudiantInfo").textContent = `${resultat.etudiantNom} — ${resultat.examenTitre}`;
+  document.getElementById("correctionNote").value = resultat.noteFinale ?? "";
+  document.getElementById("correctionRemarque").value = resultat.remarque || "";
+
+  if (resultat.type === "pdf") {
+    document.getElementById("correctionReponses").innerHTML = `
+      <button type="button" class="btn btn--primary" id="telechargerCopieBtn">📎 Télécharger la copie (${escapeHtml(resultat.fichierReponseNom || "reponse.pdf")})</button>`;
+    document.getElementById("telechargerCopieBtn").onclick = () =>
+      telechargerBase64(resultat.fichierReponseUrl, resultat.fichierReponseNom || "reponse.pdf");
+  } else {
+    document.getElementById("correctionReponses").innerHTML = (resultat.reponses || []).map((rep, i) => `
+      <div class="adm-copie-question">
+        <dt>${escapeHtml(examen?.questions?.[i]?.enonce || `Question ${i + 1}`)}</dt>
+        <dd>${escapeHtml(rep || "(pas de réponse)")}</dd>
+      </div>`).join("");
+  }
+
+  ouvrirModal(correctionModal);
+}
+
+document.getElementById("saveCorrectionBtn").addEventListener("click", async () => {
+  const note = document.getElementById("correctionNote").value;
+  if (note === "" || Number(note) < 0 || Number(note) > 20) {
+    alert("Merci d'indiquer une note entre 0 et 20.");
+    return;
+  }
+  const remarque = document.getElementById("correctionRemarque").value.trim();
+
+  await corrigerResultat(correctionResultatId, note, remarque);
+  resultatsState = await chargerTousLesResultats();
+  renderCopiesACorriger();
+  fermerModal(correctionModal);
+});
+
+/* ============================================================
+   12. ONGLET « RÉALISATIONS & TÉMOIGNAGES »
+============================================================ */
+const realisationsListEl = document.getElementById("realisationsList");
+const realisationsEmpty = document.getElementById("realisationsEmpty");
+
+function renderRealisations() {
+  realisationsEmpty.hidden = realisationsState.length > 0;
+  realisationsListEl.innerHTML = realisationsState.map((r) => `
+    <div class="adm-card">
+      ${r.photoUrl ? `<img src="${r.photoUrl}" alt="" style="width:100%; border-radius:8px; margin-bottom:8px; max-height:140px; object-fit:cover;" />` : ""}
+      <p>${escapeHtml(r.commentaire || "")}</p>
+      ${r.auteur ? `<span class="adm-card__eyebrow">${escapeHtml(r.auteur)}</span>` : ""}
+      <div class="adm-card__actions">
+        <button type="button" class="btn btn--ghost-blue" data-edit="${r.id}">Modifier</button>
+        <button type="button" class="btn btn--ghost-blue" data-delete="${r.id}">Supprimer</button>
+      </div>
+    </div>`).join("");
+}
+
+realisationsListEl.addEventListener("click", (e) => {
+  const editId = e.target.dataset.edit;
+  const delId = e.target.dataset.delete;
+  if (editId) ouvrirRealisationModal(realisationsState.find((r) => r.id === editId));
+  if (delId) supprimerRealisationAction(delId);
+});
+
+async function supprimerRealisationAction(id) {
+  if (!confirm("Supprimer cette réalisation ?")) return;
+  realisationsState = realisationsState.filter((x) => x.id !== id);
+  renderRealisations();
+  await supprimerRealisation(id);
+}
+
+const realisationModal = document.getElementById("realisationModal");
+let realisationEnEditionData = null;
+
+document.getElementById("addRealisationBtn").addEventListener("click", () => ouvrirRealisationModal(null));
+
+function ouvrirRealisationModal(realisation) {
+  realisationIdEnEdition = realisation ? realisation.id : null;
+  realisationEnEditionData = realisation || null;
+  document.getElementById("realisationModalTitle").textContent = realisation ? "Modifier la réalisation" : "Nouvelle réalisation";
+  document.getElementById("realisationModalError").textContent = "";
+  document.getElementById("rPhoto").value = "";
+  document.getElementById("rPhotoActuelle").textContent = realisation?.photoNom ? `(actuelle : ${realisation.photoNom})` : "";
+  document.getElementById("rCommentaire").value = realisation?.commentaire || "";
+  document.getElementById("rAuteur").value = realisation?.auteur || "";
+  ouvrirModal(realisationModal);
+}
+
+document.getElementById("saveRealisationBtn").addEventListener("click", async () => {
+  const commentaire = document.getElementById("rCommentaire").value.trim();
+  const errorEl = document.getElementById("realisationModalError");
+  if (!commentaire) { errorEl.textContent = "Le commentaire est obligatoire."; return; }
+
+  const fichier = document.getElementById("rPhoto").files[0] || null;
+
+  const btn = document.getElementById("saveRealisationBtn");
+  btn.disabled = true;
+  btn.textContent = "Enregistrement…";
+
+  const ok = await sauvegarderRealisation({
+    id: realisationIdEnEdition || undefined,
+    commentaire,
+    auteur: document.getElementById("rAuteur").value.trim(),
+    photoUrl: realisationEnEditionData?.photoUrl,
+    photoNom: realisationEnEditionData?.photoNom,
+    creeLe: realisationEnEditionData?.creeLe,
+  }, fichier);
+
+  btn.disabled = false;
+  btn.textContent = "Enregistrer";
+
+  if (!ok) { errorEl.textContent = "Échec de l'enregistrement (Firebase configuré ? voir ADMIN.md)."; return; }
+
+  realisationsState = await chargerRealisations();
+  renderRealisations();
+  fermerModal(realisationModal);
+});
+
+/* ============================================================
+   13. MODALES — ouverture / fermeture génériques
 ============================================================ */
 function ouvrirModal(modal) {
   modal.classList.add("is-open");
@@ -494,7 +1158,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* ============================================================
-   8. UTILITAIRES D'ÉCHAPPEMENT (sécurité affichage)
+   14. UTILITAIRES D'ÉCHAPPEMENT (sécurité affichage)
 ============================================================ */
 function escapeHtml(str) {
   return String(str ?? "").replace(/[&<>"']/g, (c) => ({
@@ -502,3 +1166,21 @@ function escapeHtml(str) {
   }[c]));
 }
 function escapeAttr(str) { return escapeHtml(str); }
+
+/* ============================================================
+   15. TÉLÉCHARGEMENT DE FICHIERS BASE64 (cours / copies PDF)
+============================================================ */
+function telechargerBase64(dataUrl, nom) {
+  const arr = dataUrl.split(",");
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) u8arr[n] = bstr.charCodeAt(n);
+  const blob = new Blob([u8arr], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nom;
+  a.click();
+  URL.revokeObjectURL(url);
+}

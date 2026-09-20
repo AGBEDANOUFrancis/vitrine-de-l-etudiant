@@ -15,7 +15,7 @@
 <!-- Styles propres au portail admin -->
 <link rel="stylesheet" href="css/admin.css" />
 </head>
-<body class="admin-page">
+<body class="admin-page" id="pageAdmin"></body>
 
 <!-- ================= ÉCRAN DE CONNEXION ================= -->
 <div class="adm-login" id="loginScreen">
@@ -65,6 +65,12 @@
     </button>
     <button type="button" class="adm-tabs__btn" data-tab="formations">Formations</button>
     <button type="button" class="adm-tabs__btn" data-tab="international">International &amp; Services</button>
+    <button type="button" class="adm-tabs__btn" data-tab="realisations">Réalisations</button>
+    <button type="button" class="adm-tabs__btn" data-tab="etudiants">Étudiants</button>
+    <button type="button" class="adm-tabs__btn" data-tab="cours">Cours</button>
+    <button type="button" class="adm-tabs__btn" data-tab="examens">
+      Examens <span class="adm-tabs__count" id="countCopiesAcorriger">0</span>
+    </button>
   </nav>
 
   <main class="adm-main">
@@ -126,6 +132,67 @@
         <button type="button" class="btn btn--primary" id="addServiceBtn">+ Ajouter un service</button>
       </div>
       <div class="adm-grid" id="servicesList"></div>
+    </section>
+
+    <!-- ===================== ONGLET RÉALISATIONS & TÉMOIGNAGES ===================== -->
+    <section class="adm-panel" data-tab-panel="realisations">
+      <div class="adm-panel__head">
+        <div>
+          <h2>Réalisations &amp; témoignages</h2>
+          <p>Photos et commentaires affichés dans la bande "Réalisations" de la page d'accueil.</p>
+        </div>
+        <button type="button" class="btn btn--primary" id="addRealisationBtn">+ Ajouter une réalisation</button>
+      </div>
+      <div class="adm-empty" id="realisationsEmpty" hidden>Aucune réalisation pour l'instant.</div>
+      <div class="adm-grid" id="realisationsList"></div>
+    </section>
+
+    <!-- ===================== ONGLET ÉTUDIANTS ===================== -->
+    <section class="adm-panel" data-tab-panel="etudiants">
+      <div class="adm-panel__head">
+        <div>
+          <h2>Comptes étudiants</h2>
+          <p>Crée un accès au portail étudiant pour chaque personne inscrite.</p>
+        </div>
+        <button type="button" class="btn btn--primary" id="addEtudiantBtn">+ Ajouter un étudiant</button>
+      </div>
+      <div class="adm-empty" id="etudiantsEmpty" hidden>Aucun compte étudiant pour l'instant.</div>
+      <div class="adm-list" id="etudiantsList"></div>
+    </section>
+
+    <!-- ===================== ONGLET COURS ===================== -->
+    <section class="adm-panel" data-tab-panel="cours">
+      <div class="adm-panel__head">
+        <div>
+          <h2>Cours</h2>
+          <p>Un cours = une description + un fichier PDF que l'étudiant peut télécharger.</p>
+        </div>
+        <button type="button" class="btn btn--primary" id="addCoursBtn">+ Ajouter un cours</button>
+      </div>
+      <div class="adm-empty" id="coursEmpty" hidden>Aucun cours pour l'instant.</div>
+      <div class="adm-grid" id="coursList"></div>
+    </section>
+
+    <!-- ===================== ONGLET EXAMENS ===================== -->
+    <section class="adm-panel" data-tab-panel="examens">
+      <div class="adm-panel__head">
+        <div>
+          <h2>Examens</h2>
+          <p>QCM auto-corrigés, questions ouvertes ou sujet/copie en PDF, à corriger toi-même.</p>
+        </div>
+        <button type="button" class="btn btn--primary" id="addExamenBtn">+ Créer un examen</button>
+      </div>
+      <div class="adm-empty" id="examensEmpty" hidden>Aucun examen pour l'instant.</div>
+      <div class="adm-grid" id="examensList"></div>
+
+      <div class="adm-panel__head adm-panel__head--spaced">
+        <div>
+          <h2>Copies à corriger</h2>
+          <p>Questions ouvertes ou copies PDF en attente d'une note et d'une remarque.</p>
+        </div>
+      </div>
+      <div class="adm-empty" id="copiesEmpty" hidden>Aucune copie en attente 🎉</div>
+      <div class="adm-list" id="copiesList"></div>
     </section>
 
   </main>
@@ -191,10 +258,7 @@
       <label for="sTexte">Description</label>
       <textarea id="sTexte" rows="3" placeholder="Description courte du service"></textarea>
     </div>
-    <div class="insc-field">
-      <label for="sProcedure">Procédure (une étape par ligne)</label>
-      <textarea id="sProcedure" rows="6" placeholder="1. Première étape...&#10;2. Deuxième étape..."></textarea>
-    </div>
+
     <div class="adm-modal__actions">
       <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
       <button type="button" class="btn btn--primary" id="saveServiceBtn">Enregistrer le service</button>
@@ -211,6 +275,210 @@
     <dl class="insc-recap" id="demandeDetail"></dl>
     <div class="adm-modal__actions">
       <button type="button" class="btn btn--ghost-blue" data-close>Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODALE : AJOUTER UN ÉTUDIANT ================= -->
+<div class="adm-modal" id="etudiantModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel adm-modal__panel--small" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3>Nouveau compte étudiant</h3>
+
+    <div class="insc-field">
+      <label for="eNom">Nom complet *</label>
+      <input type="text" id="eNom" required placeholder="Ex : Akossiwa Mensah" />
+    </div>
+    <div class="insc-field">
+      <label for="eEmail">Email (identifiant de connexion) *</label>
+      <input type="email" id="eEmail" required placeholder="etudiant@exemple.com" />
+    </div>
+    <div class="insc-field">
+      <label for="eMotDePasse">Mot de passe *</label>
+      <input type="text" id="eMotDePasse" required placeholder="Au moins 6 caractères" />
+    </div>
+    <div class="insc-field">
+      <label for="eTelephone">Téléphone <span class="insc-field__optionnel">(facultatif)</span></label>
+      <input type="tel" id="eTelephone" placeholder="Ex : 90 00 00 00" />
+    </div>
+    <div class="insc-field">
+      <label for="eFiliere">Filière</label>
+      <select id="eFiliere"><option value="">— Sélectionner —</option></select>
+    </div>
+    <div class="insc-field">
+      <label for="eFormation">Formation</label>
+      <select id="eFormation" disabled><option value="">— Choisis d'abord une filière —</option></select>
+    </div>
+
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
+      <button type="button" class="btn btn--primary" id="saveEtudiantBtn">Créer le compte</button>
+    </div>
+    <p class="adm-modal__error" id="etudiantModalError"></p>
+  </div>
+</div>
+
+<!-- ================= MODALE : AJOUTER / MODIFIER UN COURS ================= -->
+<div class="adm-modal" id="coursModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel adm-modal__panel--small" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3 id="coursModalTitle">Nouveau cours</h3>
+
+    <div class="insc-field">
+      <label for="cTitre">Titre du cours *</label>
+      <input type="text" id="cTitre" required placeholder="Ex : Introduction à la comptabilité" />
+    </div>
+    <div class="insc-field">
+      <label for="cDescription">Description</label>
+      <textarea id="cDescription" rows="3" placeholder="Ce que couvre ce cours"></textarea>
+    </div>
+    <div class="insc-field">
+      <label for="cFiliere">Filière <span aria-hidden="true">*</span></label>
+      <select id="cFiliere" required><option value="">— Sélectionner —</option></select>
+      <span class="insc-error" data-error-for="cFiliere">Le cours doit être associé à une filière : sans ça, il ne serait vu par aucun étudiant.</span>
+    </div>
+    <div class="insc-field">
+      <label for="cFormation">Formation <span class="insc-field__optionnel">(optionnel — laisse vide pour toute la filière)</span></label>
+      <select id="cFormation" disabled><option value="">— Choisis d'abord une filière —</option></select>
+    </div>
+    <div class="insc-field">
+      <label for="cFichier">Fichier PDF <span class="insc-field__optionnel" id="cFichierActuel"></span></label>
+      <input type="file" id="cFichier" accept="application/pdf" />
+    </div>
+
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
+      <button type="button" class="btn btn--primary" id="saveCoursBtn">Enregistrer le cours</button>
+    </div>
+    <p class="adm-modal__error" id="coursModalError"></p>
+  </div>
+</div>
+
+<!-- ================= MODALE : AJOUTER / MODIFIER UNE RÉALISATION ================= -->
+<div class="adm-modal" id="realisationModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel adm-modal__panel--small" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3 id="realisationModalTitle">Nouvelle réalisation</h3>
+
+    <div class="insc-field">
+      <label for="rPhoto">Photo <span class="insc-field__optionnel" id="rPhotoActuelle"></span></label>
+      <input type="file" id="rPhoto" accept="image/*" />
+    </div>
+    <div class="insc-field">
+      <label for="rCommentaire">Commentaire / témoignage *</label>
+      <textarea id="rCommentaire" rows="3" required placeholder="Ex : Grâce à cette formation, j'ai trouvé un emploi en 2 mois !"></textarea>
+    </div>
+    <div class="insc-field">
+      <label for="rAuteur">Auteur <span class="insc-field__optionnel">(facultatif)</span></label>
+      <input type="text" id="rAuteur" placeholder="Ex : Akossiwa M., ancienne étudiante" />
+    </div>
+
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
+      <button type="button" class="btn btn--primary" id="saveRealisationBtn">Enregistrer</button>
+    </div>
+    <p class="adm-modal__error" id="realisationModalError"></p>
+  </div>
+</div>
+
+<!-- ================= MODALE : CRÉER UN EXAMEN ================= -->
+<div class="adm-modal" id="examenModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3 id="examenModalTitle">Nouvel examen</h3>
+
+    <div class="insc-field">
+      <label for="exTitre">Titre de l'examen *</label>
+      <input type="text" id="exTitre" required placeholder="Ex : Examen final — Comptabilité" />
+    </div>
+    <div class="adm-modal__grid2">
+      <div class="insc-field">
+        <label for="exFiliere">Filière</label>
+        <select id="exFiliere"><option value="">— Sélectionner —</option></select>
+      </div>
+      <div class="insc-field">
+        <label for="exFormation">Formation</label>
+        <select id="exFormation" disabled><option value="">— Choisis d'abord une filière —</option></select>
+      </div>
+    </div>
+    <div class="insc-field">
+      <label for="exType">Type d'examen *</label>
+      <select id="exType">
+        <option value="qcm">QCM (auto-corrigé)</option>
+        <option value="ouvert">Questions ouvertes (correction manuelle)</option>
+        <option value="pdf">Sujet PDF (réponse en PDF)</option>
+      </select>
+    </div>
+
+    <!-- Bloc questions : QCM et Questions ouvertes -->
+    <div id="examenQuestionsSection">
+
+      <!-- Import rapide, visible seulement pour le type QCM -->
+      <div class="insc-field" id="qcmImportSection">
+        <label for="exImportQcm">Import rapide QCM (copier-coller)</label>
+        <textarea id="exImportQcm" rows="7" placeholder="1. Énoncé de la question
+a) Choix 1
+b) Choix 2
+c) Choix 3
+d) Choix 4
+Réponse : a
+
+2. Deuxième question...
+a) ...
+b) ...
+Réponse : b"></textarea>
+        <button type="button" class="btn btn--ghost-blue" id="importerQcmBtn">↺ Importer ces questions</button>
+        <p class="insc-field__optionnel">Sépare chaque question par une ligne vide. Choix précédés de a) b) c) d)... puis une ligne "Réponse : x".</p>
+      </div>
+
+      <h4 class="adm-modal__subtitle">Questions</h4>
+      <div id="examenQuestions"></div>
+      <button type="button" class="btn btn--ghost-blue" id="addQuestionBtn">+ Ajouter une question</button>
+    </div>
+
+    <!-- Bloc PDF, visible seulement pour le type "pdf" -->
+    <div class="insc-field" id="examenPdfSection" hidden>
+      <label for="exFichierSujet">Sujet de l'examen (PDF)</label>
+      <input type="file" id="exFichierSujet" accept="application/pdf" />
+      <span class="insc-field__optionnel" id="exFichierSujetActuel"></span>
+    </div>
+
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
+      <button type="button" class="btn btn--primary" id="saveExamenBtn">Enregistrer l'examen</button>
+    </div>
+    <p class="adm-modal__error" id="examenModalError"></p>
+  </div>
+</div>
+
+<!-- ================= MODALE : CORRIGER UNE COPIE ================= -->
+<div class="adm-modal" id="correctionModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <h3>Corriger la copie</h3>
+    <p class="adm-modal__subtitle" id="correctionEtudiantInfo"></p>
+
+    <div id="correctionReponses"></div>
+
+    <div class="adm-modal__grid2">
+      <div class="insc-field">
+        <label for="correctionNote">Note / 20 *</label>
+        <input type="number" id="correctionNote" min="0" max="20" step="0.5" />
+      </div>
+    </div>
+    <div class="insc-field">
+      <label for="correctionRemarque">Remarque pour l'étudiant</label>
+      <textarea id="correctionRemarque" rows="3" placeholder="Encouragements, points à revoir..."></textarea>
+    </div>
+
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" data-close>Annuler</button>
+      <button type="button" class="btn btn--primary" id="saveCorrectionBtn">Enregistrer la correction</button>
     </div>
   </div>
 </div>

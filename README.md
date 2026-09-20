@@ -1,4 +1,5 @@
 # Vitrine de l'Étudiant — Site web
+git add . git commit -m "description du changement" git push
 
 Site vitrine pour l'association **Vitrine de l'Étudiant** (CFA · CAP · BT · Modulaires), à Lomé.
 

@@ -1,4 +1,4 @@
-import { enregistrerDemande, chargerContenu } from "./firebase-config.js";
+import { enregistrerDemande, chargerContenu, chargerRealisations } from "./firebase-config.js";
 
 const fmt = (n) => n.toLocaleString("fr-FR").replace(/\u00A0/g, ".");
 
@@ -11,6 +11,7 @@ function escapeHtml(str) {
 let FILIERES = [];
 let DESTINATIONS = [];
 let SERVICES_ACCOMPAGNEMENT = [];
+let REALISATIONS = [];
 
 /* ---------------------------------------------------------
    1. RENDU DES FLYERS (cartes cliquables par filière)
@@ -66,6 +67,27 @@ function renderServices() {
   grid.querySelectorAll(".service-card").forEach((card) => {
     card.addEventListener("click", () => openServiceModal(Number(card.dataset.index)));
   });
+}
+
+/* ---------------------------------------------------------
+   3bis. RENDU RÉALISATIONS & TÉMOIGNAGES
+--------------------------------------------------------- */
+function renderRealisations() {
+  const band = document.getElementById("realisationsBand");
+  const empty = document.getElementById("realisationsEmpty");
+
+  empty.hidden = REALISATIONS.length > 0;
+
+  band.innerHTML = REALISATIONS.map(
+    (r) => `
+    <div class="realisation-card">
+      ${r.photoUrl
+        ? `<div class="realisation-card__photo"><img src="${r.photoUrl}" alt="" loading="lazy" /></div>`
+        : ""}
+      <p class="realisation-card__commentaire">${escapeHtml(r.commentaire)}</p>
+      ${r.auteur ? `<span class="realisation-card__auteur">${escapeHtml(r.auteur)}</span>` : ""}
+    </div>`
+  ).join("");
 }
 
 /* ---------------------------------------------------------
@@ -256,15 +278,17 @@ form.addEventListener("submit", async (e) => {
 async function init() {
   document.getElementById("year").textContent = new Date().getFullYear();
 
-  [FILIERES, DESTINATIONS, SERVICES_ACCOMPAGNEMENT] = await Promise.all([
+  [FILIERES, DESTINATIONS, SERVICES_ACCOMPAGNEMENT, REALISATIONS] = await Promise.all([
     chargerContenu("filieres", window.FILIERES),
     chargerContenu("destinations", window.DESTINATIONS),
     chargerContenu("services", window.SERVICES_ACCOMPAGNEMENT),
+    chargerRealisations(),
   ]);
 
   renderFlyers();
   renderDestinations();
   renderServices();
+  renderRealisations();
   renderFooterFilieres();
   renderFormationSelect();
 }

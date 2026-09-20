@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Espace Étudiant — Vitrine de l'Étudiant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/inscription.css" />
+<link rel="stylesheet" href="css/admin.css" />
+<link rel="stylesheet" href="css/etudiant.css" />
+</head>
+<body class="admin-page" id="pageEtudiant">
+
+<!-- ================= ÉCRAN DE CONNEXION ================= -->
+<div class="adm-login" id="loginScreen">
+  <form class="adm-login__card" id="loginForm">
+    <span class="nav__logo adm-login__logo">VE</span>
+    <h1>Espace Étudiant</h1>
+    <p class="adm-login__sub">Connecte-toi avec les identifiants donnés par Vitrine de l'Étudiant.</p>
+
+    <div class="insc-field">
+      <label for="loginEmail">Email</label>
+      <input type="email" id="loginEmail" required autocomplete="username" placeholder="toi@exemple.com" />
+    </div>
+    <div class="insc-field">
+      <label for="loginPassword">Mot de passe</label>
+      <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••" />
+    </div>
+
+    <button type="submit" class="btn btn--primary btn--full" id="loginSubmit">Se connecter</button>
+    <p class="adm-login__error" id="loginError"></p>
+    <p class="adm-login__hint" id="loginConfigHint" hidden>
+      ⚠️ Firebase n'est pas encore configuré. Contacte l'administration.
+    </p>
+    <p class="adm-login__hint">Pas encore de compte ? Contacte Vitrine de l'Étudiant pour l'obtenir.</p>
+  </form>
+</div>
+
+<!-- ================= APPLICATION ÉTUDIANT ================= -->
+<div class="adm-app etu-app" id="etuApp" hidden>
+
+  <header class="adm-header">
+    <div class="adm-header__inner">
+      <a href="index.html" class="nav__brand">
+        <span class="nav__logo">VE</span>
+        <span class="nav__brandtext">Vitrine <em>de l'Étudiant</em></span>
+      </a>
+      <div class="adm-header__right">
+        <span class="adm-header__user" id="etuNom"></span>
+        <a href="index.html" class="btn btn--ghost-blue">Voir le site</a>
+        <button type="button" class="btn btn--ghost-blue" id="logoutBtn">Se déconnecter</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="etu-shell">
+
+    <div class="etu-welcome etu-welcome--centered">
+      <label class="etu-welcome__avatar" id="etuAvatar" for="etuPhotoInput">VE</label>
+      <input type="file" id="etuPhotoInput" accept="image/*" hidden />
+      <p class="eyebrow">Bienvenue</p>
+      <h1 id="etuWelcomeNom">—</h1>
+      <p class="etu-welcome__formation" id="etuWelcomeFormation"></p>
+    </div>
+
+    <nav class="adm-tabs adm-tabs--centered">
+      <button type="button" class="adm-tabs__btn is-active" data-tab="cours">Mes cours</button>
+      <button type="button" class="adm-tabs__btn" data-tab="examens">
+        Examens <span class="adm-tabs__count" id="countExamensDispo">0</span>
+      </button>
+      <button type="button" class="adm-tabs__btn" data-tab="notes">Mes notes</button>
+    </nav>
+
+    <main class="adm-main etu-main">
+
+      <!-- ===================== MES COURS ===================== -->
+      <section class="adm-panel is-active" data-tab-panel="cours">
+        <div class="adm-panel__head adm-panel__head--centered">
+          <div>
+            <h2>Mes cours</h2>
+            <p>Supports de cours disponibles pour ta formation.</p>
+          </div>
+        </div>
+        <div class="adm-empty" id="coursEmpty" hidden>Aucun cours disponible pour l'instant.</div>
+        <div class="adm-grid" id="coursList"></div>
+      </section>
+
+      <!-- ===================== EXAMENS ===================== -->
+      <section class="adm-panel" data-tab-panel="examens">
+        <div class="adm-panel__head adm-panel__head--centered">
+          <div>
+            <h2>Examens disponibles</h2>
+            <p>Compose quand tu es prêt(e) — tu ne peux composer qu'une seule fois par examen.</p>
+          </div>
+        </div>
+        <div class="adm-empty" id="examensEmpty" hidden>Aucun examen disponible pour l'instant.</div>
+        <div class="adm-grid" id="examensList"></div>
+      </section>
+
+      <!-- ===================== MES NOTES ===================== -->
+      <section class="adm-panel" data-tab-panel="notes">
+        <div class="adm-panel__head adm-panel__head--centered">
+          <div>
+            <h2>Mes notes</h2>
+            <p>Résultats de tes examens, avec les remarques de l'équipe pédagogique.</p>
+          </div>
+        </div>
+        <div class="adm-empty" id="notesEmpty" hidden>Tu n'as encore composé aucun examen.</div>
+        <div class="adm-list" id="notesList"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ================= MODALE : COMPOSER UN EXAMEN ================= -->
+<div class="adm-modal" id="composerModal" aria-hidden="true">
+  <div class="adm-modal__backdrop"></div>
+  <div class="adm-modal__panel" role="dialog" aria-modal="true">
+    <h3 id="composerTitre"></h3>
+    <p class="adm-modal__subtitle" id="composerConsigne"></p>
+
+    <form id="composerForm"></form>
+
+    <!-- Bloc PDF, visible seulement pour un examen de type "pdf" -->
+    <div id="composerPdfSection" hidden>
+      <p id="composerPdfLien"></p>
+      <div class="insc-field">
+        <label for="composerFichierReponse">Ta réponse (PDF)</label>
+        <input type="file" id="composerFichierReponse" accept="application/pdf" />
+      </div>
+    </div>
+
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--ghost-blue" id="annulerComposerBtn">Annuler</button>
+      <button type="button" class="btn btn--primary" id="envoyerComposerBtn">Envoyer mes réponses</button>
+    </div>
+    <p class="adm-modal__error" id="composerError"></p>
+  </div>
+</div>
+
+<!-- ================= MODALE : RÉSULTAT (juste après un QCM) ================= -->
+<div class="adm-modal" id="resultatModal" aria-hidden="true">
+  <div class="adm-modal__backdrop" data-close></div>
+  <div class="adm-modal__panel adm-modal__panel--small" role="dialog" aria-modal="true">
+    <button class="modal__close" data-close aria-label="Fermer">✕</button>
+    <div class="insc-success" style="display:block;">
+      <div class="insc-success__icon">✓</div>
+      <h2 id="resultatTitre">Examen envoyé !</h2>
+      <p id="resultatTexte"></p>
+    </div>
+    <div class="adm-modal__actions">
+      <button type="button" class="btn btn--primary" data-close>Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script type="module" src="js/firebase-config.js"></script>
+<script type="module" src="js/etudiant.js"></script>
+</body>
+</html>

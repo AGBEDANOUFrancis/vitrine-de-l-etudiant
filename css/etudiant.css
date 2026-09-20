@@ -1,0 +1,227 @@
+/* ============================================================
+   ESPACE ÉTUDIANT — styles propres au portail étudiant
+   Complète admin.css sans le modifier (réutilise ses classes .adm-*)
+============================================================ */
+
+/* ---------- Conteneur centré global ---------- */
+.etu-shell {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---------- Bloc de bienvenue ---------- */
+.etu-welcome--centered {
+  text-align: center;
+  padding: 48px 0 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ---------- Avatar / photo de profil ---------- */
+.etu-welcome__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--bleu-vif), var(--bleu-nuit));
+  color: var(--blanc);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  box-shadow: 0 10px 22px -10px rgba(27, 75, 145, 0.55);
+  margin-bottom: 16px;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+.etu-welcome__avatar:hover::after {
+  content: "Changer";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 38, 71, 0.6);
+  color: var(--blanc);
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.etu-welcome__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.etu-welcome--centered .eyebrow { margin-bottom: 6px; }
+.etu-welcome--centered h1 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  color: var(--bleu-nuit);
+}
+
+/* ---------- Filière en bande, en gras ---------- */
+.etu-welcome__formation {
+  display: inline-block;
+  font-weight: 800;
+  background: var(--bleu-clair);
+  color: var(--bleu-vif);
+  padding: 6px 16px;
+  border-radius: 999px;
+  margin-top: 10px !important;
+}
+
+/* ---------- Onglets centrés ---------- */
+.adm-tabs--centered {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------- En-têtes de section centrés ---------- */
+.adm-panel__head--centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  margin-bottom: 32px;
+}
+.adm-panel__head--centered h2 { color: var(--bleu-nuit); }
+.adm-panel__head--centered p { color: var(--texte-doux); }
+
+/* ---------- Grille de cartes (cours / examens) : carrés alignés à gauche ---------- */
+.etu-main .adm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 220px);
+  gap: 20px;
+  justify-content: start;
+}
+
+/* ---------- Filière/formation en bande, en gras, sur les cartes ---------- */
+.etu-main .adm-card__eyebrow {
+  display: inline-block;
+  font-weight: 800;
+  background: var(--bleu-clair);
+  color: var(--bleu-vif);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+/* ---------- Liste des notes, centrée ---------- */
+.etu-main .adm-list {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---------- Cartes de notes ---------- */
+.etu-note-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 16px;
+  background: var(--blanc);
+  border: 1px solid var(--gris-ligne);
+  border-radius: var(--radius-m);
+  padding: 18px 22px;
+  box-shadow: var(--shadow-card);
+}
+.etu-note-card strong {
+  font-family: var(--font-display);
+  color: var(--bleu-nuit);
+  font-size: 1.02rem;
+}
+.etu-note-card__note {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--bleu-vif);
+  justify-self: end;
+}
+.etu-note-card__note--attente {
+  color: var(--rouge);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.etu-note-card__remarque {
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--gris-ligne);
+  color: var(--texte-doux);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+/* ---------- Empty states centrés ---------- */
+.etu-main .adm-empty {
+  text-align: center;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* ---------- Badge "déjà composé" ---------- */
+.adm-card__done {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #1B7A43;
+}
+
+/* ---------- Bloc composition d'examen (questions) ---------- */
+#composerForm { display: flex; flex-direction: column; gap: 22px; margin: 20px 0; }
+.etu-question__enonce {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--bleu-nuit);
+  margin-bottom: 10px;
+}
+.etu-question__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--gris-ligne);
+  border-radius: 10px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.etu-question__option:hover { border-color: var(--bleu-vif); background: var(--gris-clair); }
+.etu-question__option input { accent-color: var(--bleu-vif); }
+#composerForm textarea {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--gris-ligne);
+  background: var(--gris-clair);
+  resize: vertical;
+}
+
+/* ---------- Bloc PDF dans la modale de composition ---------- */
+#composerPdfSection {
+  margin: 20px 0;
+  padding: 18px;
+  background: var(--gris-clair);
+  border-radius: var(--radius-m);
+  border: 1px dashed var(--gris-ligne);
+}
+#composerPdfLien { margin-bottom: 14px; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 720px) {
+  .etu-shell { padding: 0 16px; }
+  .etu-welcome--centered { padding: 32px 0 24px; }
+  .etu-note-card { grid-template-columns: 1fr; }
+  .etu-note-card__note { justify-self: start; }
+}
